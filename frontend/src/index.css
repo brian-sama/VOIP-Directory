@@ -1,0 +1,223 @@
+:root {
+    --bcc-blue: #0A4275;
+    --bcc-red: #D8292F;
+    --bcc-grey: #F0F0F0;
+    --bcc-success: #28a745;
+
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+body {
+    margin: 0;
+    background-color: var(--bcc-grey);
+    color: #333;
+}
+
+/* Button Design System */
+.btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    text-decoration: none;
+    outline: none;
+}
+
+.btn-sm {
+    padding: 6px 14px;
+    font-size: 0.75rem;
+}
+
+/* Primary Button (BCC Blue) */
+.btn-cerulean,
+.btn-primary {
+    background: linear-gradient(135deg, #0A4275 0%, #1565C0 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(10, 66, 117, 0.2);
+}
+
+.btn-cerulean:hover,
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(10, 66, 117, 0.3);
+    filter: brightness(1.1);
+}
+
+.btn-cerulean:active,
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* Danger Button (BCC Red) */
+.btn-red,
+.btn-danger {
+    background: linear-gradient(135deg, #D8292F 0%, #FF5252 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(216, 41, 47, 0.2);
+}
+
+.btn-red:hover,
+.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(216, 41, 47, 0.3);
+    filter: brightness(1.1);
+}
+
+/* Success Button */
+.btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #48bb78 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(40, 167, 69, 0.3);
+    filter: brightness(1.1);
+}
+
+/* Outline/Secondary Button */
+.btn-outline {
+    background: white;
+    color: #4A5568;
+    border: 1px solid #E2E8F0;
+}
+
+.btn-outline:hover {
+    background: #F7FAFC;
+    border-color: #CBD5E0;
+    color: #2D3748;
+    transform: translateY(-1px);
+}
+
+/* Navbar & Utility Colors */
+.navbar-dark {
+    background-color: var(--bcc-blue) !important;
+}
+
+.bg-danger {
+    background-color: var(--bcc-red) !important;
+}
+
+.bg-success {
+    background-color: var(--bcc-success) !important;
+}
+
+.badge.bg-danger {
+    background-color: var(--bcc-red) !important;
+}
+
+/* Custom Status Badges */
+.status-pill {
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.status-pill::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: block;
+}
+
+.status-online {
+    background-color: #e6f7ed;
+    color: #1e7e34;
+    border: 1px solid #c3e6cb;
+}
+
+.status-online::before {
+    background-color: #28a745;
+    box-shadow: 0 0 8px #28a745;
+}
+
+.status-offline {
+    background-color: #fdf2f2;
+    color: #a71d2a;
+    border: 1px solid #f5c6cb;
+}
+
+.status-offline::before {
+    background-color: #dc3545;
+    box-shadow: 0 0 8px #dc3545;
+}
+
+.status-pill:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* SIP Status Pills */
+.sip-registered {
+    background-color: #e6f7ed;
+    color: #1e7e34;
+    border: 1px solid #c3e6cb;
+}
+
+.sip-registered::before {
+    background-color: #28a745;
+    box-shadow: 0 0 8px #28a745;
+}
+
+.sip-unregistered {
+    background-color: #fdf2f2;
+    color: #a71d2a;
+    border: 1px solid #f5c6cb;
+}
+
+.sip-unregistered::before {
+    background-color: #dc3545;
+    box-shadow: 0 0 8px #dc3545;
+}
+
+.sip-unknown {
+    background-color: #f5f5f5;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
+}
+
+.sip-unknown::before {
+    background-color: #95a5a6;
+    box-shadow: 0 0 4px #95a5a6;
+}
+
+/* Export Button */
+.btn-export {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.btn-export:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(102, 126, 234, 0.3);
+    filter: brightness(1.1);
+}
