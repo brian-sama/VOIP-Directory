@@ -5,11 +5,16 @@
   "scripts": {
     "start": "concurrently \"npm run backend\" \"npm run frontend\"",
     "backend": "cd backend && npm start",
-    "frontend": "cd frontend && npm run dev",
+    "frontend": "cd frontend && npm run dev -- --host",
     "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install",
     "dev": "npm start"
   },
-  "keywords": ["voip", "sip", "monitoring", "yeastar"],
+  "keywords": [
+    "voip",
+    "sip",
+    "monitoring",
+    "yeastar"
+  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {
