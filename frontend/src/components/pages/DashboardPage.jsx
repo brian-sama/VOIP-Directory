@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../api/axios';
 import { useToast } from '../../context/ToastContext';
+import Pagination from '../shared/Pagination';
+import { useAuth } from '../../context/AuthContext';
 
 // Utility function for relative time
 const getRelativeTime = (dateString) => {
@@ -78,10 +81,19 @@ const DashboardPage = () => {
     const [extensions, setExtensions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [sipFilter, setSipFilter] = useState('all');
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
     const toast = useToast();
+    const { user } = useAuth();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (user && user.role !== 'admin') {
+            navigate('/directory');
+        }
+    }, [user, navigate]);
 
     const fetchExtensions = useCallback(async () => {
         try {
@@ -120,21 +132,34 @@ const DashboardPage = () => {
     const processedData = useMemo(() => {
         let data = [...extensions];
 
+        // Search filter
+        if (searchQuery) {
+            const q = searchQuery.toLowerCase();
+            data = data.filter(ext => (
+                String(ext.ip_address || '').toLowerCase().includes(q) ||
+                String(ext.name_surname || '').toLowerCase().includes(q) ||
+                String(ext.extension_number || '').toLowerCase().includes(q) ||
+                String(ext.department || '').toLowerCase().includes(q) ||
+                String(ext.station || '').toLowerCase().includes(q) ||
+                String(ext.section || '').toLowerCase().includes(q)
+            ));
+        }
+
         // Network status filter
         if (statusFilter !== 'all') {
-            data = data.filter(ext => ext.status === statusFilter);
+            data = data.filter(ext => (ext.status || 'Offline') === statusFilter);
         }
 
         // SIP status filter
         if (sipFilter !== 'all') {
-            data = data.filter(ext => ext.sip_status === sipFilter);
+            data = data.filter(ext => (ext.sip_status || 'Unknown') === sipFilter);
         }
 
         // Sort
         if (sortConfig.key) {
             data.sort((a, b) => {
-                const aVal = a[sortConfig.key] || '';
-                const bVal = b[sortConfig.key] || '';
+                const aVal = String(a[sortConfig.key] || '').toLowerCase();
+                const bVal = String(b[sortConfig.key] || '').toLowerCase();
                 if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
                 if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
                 return 0;
@@ -142,7 +167,7 @@ const DashboardPage = () => {
         }
 
         return data;
-    }, [extensions, statusFilter, sipFilter, sortConfig]);
+    }, [extensions, searchQuery, statusFilter, sipFilter, sortConfig]);
 
     // Stats
     const onlineCount = extensions.filter(ext => ext.status === 'Online').length;
@@ -152,14 +177,15 @@ const DashboardPage = () => {
 
     // Export to CSV
     const exportToCSV = () => {
-        const headers = ['Status', 'SIP Status', 'IP Address', 'User Name', 'Extension', 'Department', 'Station', 'Model', 'Designation', 'Office Number', 'Last Seen'];
+        const headers = ['Status', 'SIP Status', 'IP Address', 'User Name', 'Extension', 'Department', 'Section', 'Station', 'Model', 'Designation', 'Office Number', 'Last Seen'];
         const rows = processedData.map(ext => [
-            ext.status,
+            ext.status || 'Offline',
             ext.sip_status || 'Unknown',
-            ext.ip_address,
+            ext.ip_address || '',
             ext.name_surname,
-            ext.extension_number,
+            ext.extension_number || '',
             ext.department || '',
+            ext.section || '',
             ext.station || '',
             ext.phone_model || '',
             ext.designation || '',
@@ -182,6 +208,21 @@ const DashboardPage = () => {
         toast.success('CSV exported successfully!');
     };
 
+
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(15);
+
+    // Reset page on filter change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, statusFilter, sipFilter, sortConfig]);
+
+    // Calculate pagination slice
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = processedData.slice(indexOfFirstItem, indexOfLastItem);
+
     return (
         <div className="container">
             <div className="page-header">
@@ -195,17 +236,8 @@ const DashboardPage = () => {
                     type="text"
                     id="filterInput"
                     placeholder="Search by IP, user, extension, department, or station..."
-                    onChange={(e) => {
-                        const q = e.target.value.toLowerCase();
-                        if (!q) return fetchExtensions();
-                        setExtensions(prev => prev.filter(ext => (
-                            String(ext.ip_address || '').toLowerCase().includes(q) ||
-                            String(ext.name_surname || '').toLowerCase().includes(q) ||
-                            String(ext.extension_number || '').toLowerCase().includes(q) ||
-                            String(ext.department || '').toLowerCase().includes(q) ||
-                            String(ext.station || '').toLowerCase().includes(q)
-                        )));
-                    }}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 <div className="flex gap-1 align-center">
                     <select
@@ -259,6 +291,7 @@ const DashboardPage = () => {
                                 <th className={getSortClass('name_surname')} onClick={() => handleSort('name_surname')}>User Name</th>
                                 <th className={getSortClass('extension_number')} onClick={() => handleSort('extension_number')}>Extension</th>
                                 <th className={getSortClass('department')} onClick={() => handleSort('department')}>Department</th>
+                                <th className={getSortClass('section')} onClick={() => handleSort('section')}>Section</th>
                                 <th className={getSortClass('station')} onClick={() => handleSort('station')}>Station</th>
                                 <th className={getSortClass('phone_model')} onClick={() => handleSort('phone_model')}>Model</th>
                                 <th className={getSortClass('designation')} onClick={() => handleSort('designation')}>Designation</th>
@@ -278,11 +311,11 @@ const DashboardPage = () => {
                                     <td colSpan={11} className="text-center">No data available</td>
                                 </tr>
                             ) : (
-                                processedData.map(ext => (
+                                currentItems.map(ext => (
                                     <tr key={ext.id}>
                                         <td>
-                                            <span className={`status-pill ${ext.status === 'Online' ? 'status-online' : 'status-offline'}`}>
-                                                {ext.status}
+                                            <span className={`status-pill ${(ext.status === 'Online') ? 'status-online' : 'status-offline'}`}>
+                                                {ext.status || 'Offline'}
                                             </span>
                                         </td>
                                         <td>
@@ -294,6 +327,7 @@ const DashboardPage = () => {
                                         <td>{ext.name_surname}</td>
                                         <td>{ext.extension_number}</td>
                                         <td>{ext.department}</td>
+                                        <td>{ext.section || '-'}</td>
                                         <td>{ext.station}</td>
                                         <td>{ext.phone_model || ''}</td>
                                         <td>{ext.designation || ''}</td>
@@ -304,6 +338,12 @@ const DashboardPage = () => {
                             )}
                         </tbody>
                     </table>
+                    <Pagination
+                        itemsPerPage={itemsPerPage}
+                        totalItems={processedData.length}
+                        paginate={(num) => setCurrentPage(num)}
+                        currentPage={currentPage}
+                    />
                 </div>
             </div>
         </div>

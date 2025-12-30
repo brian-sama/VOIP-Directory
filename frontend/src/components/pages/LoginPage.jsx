@@ -16,7 +16,7 @@ const LoginPage = () => {
         e.preventDefault();
         setLoading(true);
         setError('');
-        
+
         if (!username || !password) {
             setError('Please enter both username and password.');
             setLoading(false);
@@ -25,8 +25,15 @@ const LoginPage = () => {
 
         try {
             const response = await api.post('/auth/login', { username, password });
-            login(response.data); // Update auth context
-            navigate('/'); // Redirect to dashboard
+            const userData = response.data;
+            login(userData); // Update auth context
+
+            // Redirect based on role
+            if (userData.role === 'admin') {
+                navigate('/admin');
+            } else {
+                navigate('/directory');
+            }
         } catch (err) {
             const message = err.response?.data?.msg || 'Failed to log in. Please check your credentials.';
             setError(message);
@@ -49,28 +56,28 @@ const LoginPage = () => {
 
                 <form onSubmit={handleSubmit} className="login-form">
                     <div className="form-group">
-                        <label htmlFor="username">Username</label>
+                        <label htmlFor="username">Name & Surname</label>
                         <input
                             id="username"
                             name="username"
                             type="text"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            placeholder="Enter your username"
+                            placeholder="e.g. John Doe"
                             required
                             autoComplete="username"
                         />
                     </div>
 
                     <div className="form-group">
-                        <label htmlFor="password">Password</label>
+                        <label htmlFor="password">Extension Number</label>
                         <input
                             id="password"
                             name="password"
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Enter your password"
+                            placeholder="e.g. 101"
                             required
                             autoComplete="current-password"
                         />

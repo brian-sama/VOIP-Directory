@@ -16,10 +16,14 @@ CREATE TABLE IF NOT EXISTS admins (
 CREATE TABLE IF NOT EXISTS users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name_surname VARCHAR(100) NOT NULL,
+  username VARCHAR(100), -- Will be set to name_surname
+  password VARCHAR(255), -- Will be extension number
   department VARCHAR(100),
+  section VARCHAR(100), -- Mandatory field
   office_number VARCHAR(20),
   designation VARCHAR(100),
   station VARCHAR(100),
+  role ENUM('admin', 'user') DEFAULT 'user',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
+import api from '../../api/axios';
 
-const UserEditModal = ({ show, handleClose, handleSubmit, user, departments = [], stations = [] }) => {
+const UserEditModal = ({ show, handleClose, handleSubmit, user }) => {
+    const [departments, setDepartments] = useState([]);
+    const [sections, setSections] = useState([]);
+    const [stations, setStations] = useState([]);
     const [formData, setFormData] = useState({
         name_surname: '',
         department: '',
+        section: '',
         office_number: '',
         designation: '',
         station: '',
@@ -15,13 +20,34 @@ const UserEditModal = ({ show, handleClose, handleSubmit, user, departments = []
     });
 
     const [customDepartment, setCustomDepartment] = useState(false);
+    const [customSection, setCustomSection] = useState(false);
     const [customStation, setCustomStation] = useState(false);
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const [dRes, sRes, uRes] = await Promise.all([
+                    api.get('/departments'),
+                    api.get('/sections'),
+                    api.get('/users')
+                ]);
+                setDepartments(dRes.data.map(d => d.name));
+                setSections(sRes.data.map(s => s.name));
+                const uniqueStations = Array.from(new Set(uRes.data.map(u => u.station).filter(Boolean))).sort();
+                setStations(uniqueStations);
+            } catch (err) {
+                console.error('Failed to fetch categories', err);
+            }
+        };
+        if (show) fetchCategories();
+    }, [show]);
 
     useEffect(() => {
         if (user) {
             setFormData({
                 name_surname: user.name_surname || '',
                 department: user.department || '',
+                section: user.section || '',
                 office_number: user.office_number || '',
                 designation: user.designation || '',
                 station: user.station || '',
@@ -30,19 +56,19 @@ const UserEditModal = ({ show, handleClose, handleSubmit, user, departments = []
                 mac_address: user.mac_address || '',
                 phone_model: user.phone_model || '',
             });
-            // Check if department/station exists in the list, if not, enable custom input
             setCustomDepartment(user.department && !departments.includes(user.department));
+            setCustomSection(user.section && !sections.includes(user.section));
             setCustomStation(user.station && !stations.includes(user.station));
         } else {
-            // Reset form for adding new user
             setFormData({
-                name_surname: '', department: '', office_number: '', designation: '', station: '',
+                name_surname: '', department: '', section: '', office_number: '', designation: '', station: '',
                 extension_number: '', ip_address: '', mac_address: '', phone_model: '',
             });
             setCustomDepartment(false);
+            setCustomSection(false);
             setCustomStation(false);
         }
-    }, [user, show, departments, stations]);
+    }, [user, show, departments, sections]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -111,6 +137,45 @@ const UserEditModal = ({ show, handleClose, handleSubmit, user, departments = []
                                     placeholder="Enter new department"
                                 />
                                 <Button variant="outline-secondary" size="sm" onClick={() => setCustomDepartment(false)}>
+                                    Cancel
+                                </Button>
+                            </div>
+                        )}
+                    </Form.Group>
+
+                    <Form.Group className="mb-3">
+                        <Form.Label>Section</Form.Label>
+                        {!customSection ? (
+                            <Form.Select
+                                name="section"
+                                value={formData.section}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val === '__custom__') {
+                                        setCustomSection(true);
+                                        setFormData({ ...formData, section: '' });
+                                    } else {
+                                        setCustomSection(false);
+                                        setFormData({ ...formData, section: val });
+                                    }
+                                }}
+                            >
+                                <option value="">-- Select Section --</option>
+                                {sections.map(s => (
+                                    <option key={s} value={s}>{s}</option>
+                                ))}
+                                <option value="__custom__">Add New Section...</option>
+                            </Form.Select>
+                        ) : (
+                            <div className="d-flex gap-2">
+                                <Form.Control
+                                    type="text"
+                                    name="section"
+                                    value={formData.section}
+                                    onChange={handleChange}
+                                    placeholder="Enter new section"
+                                />
+                                <Button variant="outline-secondary" size="sm" onClick={() => setCustomSection(false)}>
                                     Cancel
                                 </Button>
                             </div>

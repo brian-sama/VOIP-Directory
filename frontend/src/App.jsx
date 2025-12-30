@@ -6,6 +6,7 @@ import ReportsPage from './components/pages/ReportsPage';
 import AdminPage from './components/pages/AdminPage';
 import SettingsPage from './components/pages/SettingsPage';
 import ActivityPage from './components/pages/ActivityPage';
+import DirectoryPage from './components/pages/DirectoryPage';
 import PrivateRoute from './components/routing/PrivateRoute';
 import './App.css';
 
@@ -18,6 +19,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/" element={<PrivateRoute />}>
             <Route path="/" element={<DashboardPage />} />
+            <Route path="/directory" element={<DirectoryPage />} />
           </Route>
           <Route path="/reports" element={<PrivateRoute />}>
             <Route path="/reports" element={<ReportsPage />} />

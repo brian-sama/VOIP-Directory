@@ -1,46 +1,77 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
+import { useToast } from '../../context/ToastContext';
+import { useAuth } from '../../context/AuthContext';
 
 const SettingsPage = () => {
-    const [users, setUsers] = useState([]);
+    const { user } = useAuth();
     const [departments, setDepartments] = useState([]);
+    const [sections, setSections] = useState([]);
     const [stations, setStations] = useState([]);
+    const toast = useToast();
 
     useEffect(() => {
-        fetchUsers();
+        fetchData();
     }, []);
 
-    const fetchUsers = async () => {
+    const fetchData = async () => {
         try {
-            const { data } = await api.get('/users');
-            setUsers(data);
-            // Extract unique departments and stations
-            setDepartments(Array.from(new Set(data.map(u => u.department).filter(Boolean))).sort());
-            setStations(Array.from(new Set(data.map(u => u.station).filter(Boolean))).sort());
+            const [dRes, sRes, uRes] = await Promise.all([
+                api.get('/departments'),
+                api.get('/sections'),
+                api.get('/users')
+            ]);
+            setDepartments(dRes.data);
+            setSections(sRes.data);
+            // Deriving unique stations from users for now
+            setStations(Array.from(new Set(uRes.data.map(u => u.station).filter(Boolean))).sort());
         } catch (err) {
-            console.error('Failed to fetch users', err);
+            console.error('Failed to fetch settings data', err);
+            toast.error('Failed to load settings');
         }
     };
 
-    const addDepartment = (name) => {
-        if (!name) return;
-        setDepartments(prev => Array.from(new Set([name, ...prev])).sort());
-    };
-
-    const removeDepartment = (name) => {
-        if (window.confirm(`Remove department "${name}"? This won't delete users, but they'll need to be reassigned.`)) {
-            setDepartments(prev => prev.filter(d => d !== name));
+    const addDepartment = async (name) => {
+        try {
+            await api.post('/departments', { name });
+            toast.success(`Department "${name}" added`);
+            fetchData();
+        } catch (err) {
+            toast.error('Failed to add department');
         }
     };
 
-    const addStation = (name) => {
-        if (!name) return;
-        setStations(prev => Array.from(new Set([name, ...prev])).sort());
+    const removeDepartment = async (id, name) => {
+        if (window.confirm(`Remove department "${name}"? This won't delete users.`)) {
+            try {
+                await api.delete(`/departments/${id}`);
+                toast.success('Department removed');
+                fetchData();
+            } catch (err) {
+                toast.error('Failed to remove department');
+            }
+        }
     };
 
-    const removeStation = (name) => {
-        if (window.confirm(`Remove station "${name}"? This won't delete users, but they'll need to be reassigned.`)) {
-            setStations(prev => prev.filter(s => s !== name));
+    const addSection = async (name) => {
+        try {
+            await api.post('/sections', { name });
+            toast.success(`Section "${name}" added`);
+            fetchData();
+        } catch (err) {
+            toast.error('Failed to add section');
+        }
+    };
+
+    const removeSection = async (id, name) => {
+        if (window.confirm(`Remove section "${name}"? This won't delete users.`)) {
+            try {
+                await api.delete(`/sections/${id}`);
+                toast.success('Section removed');
+                fetchData();
+            } catch (err) {
+                toast.error('Failed to remove section');
+            }
         }
     };
 
@@ -48,149 +79,113 @@ const SettingsPage = () => {
         <div className="container">
             <div className="page-header">
                 <h1>Settings</h1>
-                <p className="text-muted">Manage departments and stations</p>
+                <p className="text-muted">Manage system departments and sections</p>
             </div>
 
-            <div className="grid-2">
-                {/* Departments Section */}
-                <div className="card">
-                    <div className="card-header">
-                        <h2>Departments</h2>
-                    </div>
-                    <div style={{ padding: '16px' }}>
-                        <form onSubmit={(e) => {
-                            e.preventDefault();
-                            const name = e.target.departmentName.value.trim();
-                            addDepartment(name);
-                            e.target.departmentName.value = '';
-                        }}>
-                            <div className="form-group">
-                                <label htmlFor="departmentName" className="form-label">
-                                    Add New Department
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="e.g., Finance, IT, HR"
-                                    id="departmentName"
-                                    name="departmentName"
-                                    required
-                                    style={{ width: '100%' }}
-                                />
-                            </div>
-                            <button type="submit" className="btn btn-cerulean">
-                                Add Department
-                            </button>
-                        </form>
-
-                        <div style={{ marginTop: '24px' }}>
-                            <h3 style={{ fontSize: '1rem', marginBottom: '12px', color: 'var(--muted)' }}>
-                                Current Departments ({departments.length})
-                            </h3>
-                            {departments.length === 0 ? (
-                                <div className="text-muted" style={{ padding: '20px', textAlign: 'center', background: '#f9fafb', borderRadius: '8px' }}>
-                                    No departments yet. Add one above.
+            {user?.role === 'admin' ? (
+                <div className="grid-3">
+                    {/* Departments */}
+                    <div className="card">
+                        <div className="card-header">
+                            <h2>Departments</h2>
+                        </div>
+                        <div style={{ padding: '16px' }}>
+                            <form onSubmit={(e) => {
+                                e.preventDefault();
+                                const name = e.target.deptName.value.trim();
+                                if (name) {
+                                    addDepartment(name);
+                                    e.target.deptName.value = '';
+                                }
+                            }}>
+                                <div className="form-group">
+                                    <label className="form-label">New Department</label>
+                                    <input type="text" name="deptName" className="form-control" placeholder="e.g., HR, Finance" required />
                                 </div>
-                            ) : (
-                                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                                <button type="submit" className="btn btn-cerulean mt-2">Add</button>
+                            </form>
+                            <div className="mt-4">
+                                <h3 className="h6 text-muted">Current Departments</h3>
+                                <ul className="list-group">
                                     {departments.map(d => (
-                                        <li key={d} style={{
-                                            padding: '12px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'space-between',
-                                            borderBottom: '1px solid #f0f2f7'
-                                        }}>
-                                            <span style={{ fontWeight: '500' }}>{d}</span>
-                                            <button
-                                                className="btn btn-outline btn-sm"
-                                                onClick={() => removeDepartment(d)}
-                                            >
-                                                Remove
-                                            </button>
+                                        <li key={d.id} className="list-group-item d-flex justify-between align-center">
+                                            <span>{d.name}</span>
+                                            <button className="btn btn-outline btn-sm" onClick={() => removeDepartment(d.id, d.name)}>Remove</button>
                                         </li>
                                     ))}
                                 </ul>
-                            )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Sections */}
+                    <div className="card">
+                        <div className="card-header">
+                            <h2>Sections</h2>
+                        </div>
+                        <div style={{ padding: '16px' }}>
+                            <form onSubmit={(e) => {
+                                e.preventDefault();
+                                const name = e.target.secName.value.trim();
+                                if (name) {
+                                    addSection(name);
+                                    e.target.secName.value = '';
+                                }
+                            }}>
+                                <div className="form-group">
+                                    <label className="form-label">New Section</label>
+                                    <input type="text" name="secName" className="form-control" placeholder="e.g., IT Support" required />
+                                </div>
+                                <button type="submit" className="btn btn-cerulean mt-2">Add</button>
+                            </form>
+                            <div className="mt-4">
+                                <h3 className="h6 text-muted">Current Sections</h3>
+                                <ul className="list-group">
+                                    {sections.map(s => (
+                                        <li key={s.id} className="list-group-item d-flex justify-between align-center">
+                                            <span>{s.name}</span>
+                                            <button className="btn btn-outline btn-sm" onClick={() => removeSection(s.id, s.name)}>Remove</button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Stations - Only for Admins as requested */}
+                    <div className="card">
+                        <div className="card-header">
+                            <h2>Stations</h2>
+                        </div>
+                        <div style={{ padding: '16px' }}>
+                            <div className="alert-info p-2 mb-3 small">
+                                Stations are derived from user records. Currently managing {stations.length} unique stations.
+                            </div>
+                            <ul className="list-group">
+                                {stations.map((s, idx) => (
+                                    <li key={idx} className="list-group-item">
+                                        <span>{s}</span>
+                                    </li>
+                                ))}
+                            </ul>
                         </div>
                     </div>
                 </div>
-
-                {/* Stations Section */}
+            ) : (
                 <div className="card">
                     <div className="card-header">
-                        <h2>Stations</h2>
+                        <h2>My Profile Settings</h2>
                     </div>
-                    <div style={{ padding: '16px' }}>
-                        <form onSubmit={(e) => {
-                            e.preventDefault();
-                            const name = e.target.stationName.value.trim();
-                            addStation(name);
-                            e.target.stationName.value = '';
-                        }}>
-                            <div className="form-group">
-                                <label htmlFor="stationName" className="form-label">
-                                    Add New Station
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="e.g., Main Office, Branch A"
-                                    id="stationName"
-                                    name="stationName"
-                                    required
-                                    style={{ width: '100%' }}
-                                />
-                            </div>
-                            <button type="submit" className="btn btn-cerulean">
-                                Add Station
-                            </button>
-                        </form>
-
-                        <div style={{ marginTop: '24px' }}>
-                            <h3 style={{ fontSize: '1rem', marginBottom: '12px', color: 'var(--muted)' }}>
-                                Current Stations ({stations.length})
-                            </h3>
-                            {stations.length === 0 ? (
-                                <div className="text-muted" style={{ padding: '20px', textAlign: 'center', background: '#f9fafb', borderRadius: '8px' }}>
-                                    No stations yet. Add one above.
-                                </div>
-                            ) : (
-                                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                                    {stations.map(s => (
-                                        <li key={s} style={{
-                                            padding: '12px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'space-between',
-                                            borderBottom: '1px solid #f0f2f7'
-                                        }}>
-                                            <span style={{ fontWeight: '500' }}>{s}</span>
-                                            <button
-                                                className="btn btn-outline btn-sm"
-                                                onClick={() => removeStation(s)}
-                                            >
-                                                Remove
-                                            </button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </div>
+                    <div style={{ padding: '20px' }}>
+                        <p><strong>Name:</strong> {user?.user?.username || user?.username}</p>
+                        <p><strong>Department:</strong> {user?.user?.department || 'N/A'}</p>
+                        <p><strong>Section:</strong> {user?.user?.section || 'N/A'}</p>
+                        <p><strong>Role:</strong> {user?.role}</p>
+                        <hr />
+                        <p className="text-muted">You have limited access to system settings. Please contact an administrator for changes to departments or stations.</p>
                     </div>
                 </div>
-            </div>
-
-            <div className="card" style={{ marginTop: '24px' }}>
-                <div className="card-header">
-                    <h2>Information</h2>
-                </div>
-                <div style={{ padding: '16px' }}>
-                    <p className="text-muted" style={{ margin: 0 }}>
-                        <strong>Note:</strong> Departments and stations are automatically extracted from your user data.
-                        Adding new ones here will make them available in the user creation/edit forms.
-                        Removing them won't delete users, but you may need to reassign affected users to new departments or stations.
-                    </p>
-                </div>
-            </div>
+            )}
         </div>
     );
 };

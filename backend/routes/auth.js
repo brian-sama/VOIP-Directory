@@ -13,29 +13,42 @@ router.post('/login', async (req, res) => {
   }
 
   try {
-    const [rows] = await db.query('SELECT * FROM admins WHERE username = ?', [username]);
+    // 1. Check if Admin
+    const [adminRows] = await db.query('SELECT * FROM admins WHERE username = ?', [username]);
 
-    if (rows.length === 0) {
-      return res.status(400).json({ msg: 'Invalid credentials' });
+    if (adminRows.length > 0) {
+      const admin = adminRows[0];
+      // Plain text check (Update to bcrypt in production)
+      if (password === admin.password) {
+        return res.json({
+          msg: 'Login successful',
+          role: 'admin',
+          user: { username: admin.username }
+        });
+      }
     }
 
-    const admin = rows[0];
+    // 2. Check if Regular User
+    // Search by username (which is name_surname) or directly by name_surname if consistent
+    const [userRows] = await db.query('SELECT * FROM users WHERE name_surname = ? OR username = ?', [username, username]);
 
-    // NOTE: This is plain text password comparison. In a production environment,
-    // you MUST use a hashing library like bcrypt to compare passwords.
-    // Example: const isMatch = await bcrypt.compare(password, admin.password);
-    const isMatch = (password === admin.password);
-
-    if (!isMatch) {
-      return res.status(400).json({ msg: 'Invalid credentials' });
+    if (userRows.length > 0) {
+      const user = userRows[0];
+      // Password for user is their extension number (stored in password column)
+      if (password === user.password) {
+        return res.json({
+          msg: 'Login successful',
+          role: 'user',
+          user: {
+             username: user.name_surname,
+             department: user.department,
+             section: user.section
+          }
+        });
+      }
     }
 
-    // For now, we'll just send a success message.
-    // In a real app, you would return a JSON Web Token (JWT).
-    res.json({
-      msg: 'Login successful',
-      // token: 'YOUR_JWT_HERE'
-    });
+    return res.status(400).json({ msg: 'Invalid credentials' });
 
   } catch (err) {
     console.error(err.message);

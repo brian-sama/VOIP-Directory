@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import UserEditModal from '../shared/UserEditModal';
+import Pagination from '../shared/Pagination';
 import { useToast } from '../../context/ToastContext';
 
 const AdminPage = () => {
@@ -89,20 +90,46 @@ const AdminPage = () => {
         }
     };
 
-    // Derived lists
-    const [allUsers, setAllUsers] = useState([]);
+    // Derived lists and filtering
+    const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
-    const phones = users.map(u => ({ ip: u.ip_address, extension: u.extension_number, user: u.name_surname, status: u.status, model: u.phone_model, mac: u.mac_address }));
-    const filteredPhones = statusFilter === 'all' ? phones : phones.filter(p => p.status === statusFilter);
-    const [departments, setDepartments] = useState([]);
-    const [stations, setStations] = useState([]);
 
+
+    // Pagination state
+    const [currentUserPage, setCurrentUserPage] = useState(1);
+    const [usersPerPage] = useState(10);
+
+    // Pagination for Phones
+    const [currentPhonePage, setCurrentPhonePage] = useState(1);
+    const [phonesPerPage] = useState(10);
+
+    const filteredUsers = searchQuery
+        ? users.filter(u => (
+            String(u.name_surname || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+            String(u.extension_number || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+            String(u.department || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+            String(u.section || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+            String(u.designation || '').toLowerCase().includes(searchQuery.toLowerCase())
+        ))
+        : users;
+
+    // Calculate current users slice
+    const indexOfLastUser = currentUserPage * usersPerPage;
+    const indexOfFirstUser = indexOfLastUser - usersPerPage;
+    const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+
+    // Reset page when search changes
     useEffect(() => {
-        // keep derived lists in sync when users change
-        setAllUsers(users);
-        setDepartments(Array.from(new Set(users.map(u => u.department).filter(Boolean))).sort());
-        setStations(Array.from(new Set(users.map(u => u.station).filter(Boolean))).sort());
-    }, [users]);
+        setCurrentUserPage(1);
+    }, [searchQuery]);
+
+    const phones = users.map(u => ({ ip: u.ip_address, extension: u.extension_number, user: u.name_surname, status: u.status || 'Offline', model: u.phone_model, mac: u.mac_address }));
+    const filteredPhones = statusFilter === 'all' ? phones : phones.filter(p => (p.status || 'Offline') === statusFilter);
+
+    // Calculate current phones slice
+    const indexOfLastPhone = currentPhonePage * phonesPerPage;
+    const indexOfFirstPhone = indexOfLastPhone - phonesPerPage;
+    const currentPhones = filteredPhones.slice(indexOfFirstPhone, indexOfLastPhone);
 
     const addDepartment = (name) => {
         if (!name) return;
@@ -137,19 +164,62 @@ const AdminPage = () => {
             <section id="usersTab" className={`tab-content ${activeTab === 'users' ? 'active' : ''}`}>
                 <div className="card">
                     <div className="card-header">
-                        <h2>VOIP Users</h2>
-                        <button className="btn btn-cerulean" onClick={() => handleModalShow()}>Add User</button>
+                        <h2>VOIP Users ({users.length})</h2>
+                        <div className="flex gap-2">
+                            <input
+                                type="file"
+                                id="importFile"
+                                accept=".csv, .xlsx, .xls"
+                                style={{ display: 'none' }}
+                                onChange={async (e) => {
+                                    if (e.target.files && e.target.files[0]) {
+                                        const file = e.target.files[0];
+                                        const formData = new FormData();
+                                        formData.append('file', file);
+
+                                        try {
+                                            toast.info('Uploading and importing...');
+                                            const res = await api.post('/import/users', formData, {
+                                                headers: { 'Content-Type': 'multipart/form-data' }
+                                            });
+                                            if (res.data.errors && res.data.errors.length > 0) {
+                                                console.warn('Import errors:', res.data.errors);
+                                                // Alert the user about errors
+                                                alert(`Import completed with ${res.data.errors.length} errors/warnings:\n\n${res.data.errors.join('\n')}`);
+                                                toast.warning(`Imported with ${res.data.errors.length} errors. Check alert.`);
+                                            } else {
+                                                toast.success(res.data.msg || 'Import successful!');
+                                            }
+                                            fetchUsers();
+                                        } catch (err) {
+                                            console.error(err);
+                                            // Alert failure
+                                            alert(`Import Failed: ${err.response?.data?.msg || err.message}`);
+                                            toast.error('Import failed.');
+                                        }
+                                        e.target.value = null; // Reset input
+                                    }
+                                }}
+                            />
+                            <button className="btn btn-outline-secondary btn-sm" onClick={() => {
+                                const headers = ['Name', 'Surname', 'Department', 'Section', 'Office Number', 'Designation', 'Station', 'Extension', 'IP Address', 'Model', 'Mac Address'];
+                                const csvContent = [headers].map(e => e.join(',')).join('\n');
+                                const blob = new Blob([csvContent], { type: 'text/csv' });
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = 'user_import_template.csv';
+                                a.click();
+                                URL.revokeObjectURL(url);
+                            }}>Download Template</button>
+                            <button className="btn btn-secondary btn-sm" onClick={() => document.getElementById('importFile').click()}>Import Users</button>
+                            <button className="btn btn-cerulean" onClick={() => handleModalShow()}>Add User</button>
+                        </div>
                     </div>
 
                     <div className="search-bar">
                         <input type="text" placeholder="Search users..." id="userSearchInput" onChange={(e) => {
-                            const q = e.target.value.toLowerCase();
-                            if (!q) return fetchUsers();
-                            setUsers(prev => prev.filter(u => (
-                                String(u.name_surname || '').toLowerCase().includes(q) ||
-                                String(u.extension_number || '').toLowerCase().includes(q) ||
-                                String(u.department || '').toLowerCase().includes(q)
-                            )));
+                            setSearchQuery(e.target.value);
                         }} />
                     </div>
 
@@ -158,8 +228,10 @@ const AdminPage = () => {
                             <thead>
                                 <tr>
                                     <th>Name</th>
+                                    <th>Role</th>
                                     <th>Designation</th>
                                     <th>Department</th>
+                                    <th>Section</th>
                                     <th>Station</th>
                                     <th>Office</th>
                                     <th>Extension</th>
@@ -172,39 +244,79 @@ const AdminPage = () => {
                             <tbody>
                                 {loadingUsers ? (
                                     <tr>
-                                        <td colSpan={10} className="text-center">
+                                        <td colSpan={12} className="text-center">
                                             <div className="spinner" />
                                         </td>
                                     </tr>
                                 ) : usersError ? (
                                     <tr>
-                                        <td colSpan={10} className="text-center text-danger">{usersError}</td>
+                                        <td colSpan={12} className="text-center text-danger">{usersError}</td>
                                     </tr>
-                                ) : users.length === 0 ? (
+                                ) : filteredUsers.length === 0 ? (
                                     <tr>
-                                        <td colSpan={10} className="text-center">No users found</td>
+                                        <td colSpan={12} className="text-center">No users found</td>
                                     </tr>
                                 ) : (
-                                    users.map(u => (
+                                    currentUsers.map(u => (
                                         <tr key={u.id}>
                                             <td>{u.name_surname}</td>
+                                            <td>
+                                                <span className={`badge ${u.role === 'admin' ? 'bg-danger' : 'bg-secondary'}`}>
+                                                    {u.role || 'user'}
+                                                </span>
+                                            </td>
                                             <td>{u.designation || ''}</td>
                                             <td>{u.department}</td>
+                                            <td>{u.section || '-'}</td>
                                             <td>{u.station || ''}</td>
                                             <td>{u.office_number}</td>
-                                            <td>{u.extension_number}</td>
-                                            <td>{u.ip_address}</td>
+                                            <td>{u.extension_number || '-'}</td>
+                                            <td>{u.ip_address || '-'}</td>
                                             <td>{u.phone_model || ''}</td>
                                             <td>{u.mac_address || ''}</td>
                                             <td>
-                                                <button className="btn btn-cerulean btn-sm" onClick={() => handleModalShow(u)}>Edit</button>
-                                                <button className="btn btn-red btn-sm" onClick={() => handleDelete(u.id)}>Delete</button>
-                                            </td>
+                                                <td>
+                                                    <div style={{ display: 'flex', gap: '5px', justifyContent: 'center' }}>
+                                                        <button
+                                                            type="button"
+                                                            className={`btn btn-sm ${u.role === 'admin' ? 'btn-red' : 'btn-complete'}`}
+                                                            style={{ padding: '4px 8px', fontSize: '0.8rem', minWidth: '32px' }}
+                                                            onClick={() => handleRoleChange(u)}
+                                                            title={u.role === 'admin' ? "Revoke Admin" : "Make Admin"}
+                                                        >
+                                                            {u.role === 'admin' ? '👑' : '👤'}
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-cerulean btn-sm"
+                                                            style={{ padding: '4px 8px' }}
+                                                            onClick={() => handleModalShow(u)}
+                                                            title="Edit User"
+                                                        >
+                                                            ✏️
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-red btn-sm"
+                                                            style={{ padding: '4px 8px' }}
+                                                            onClick={() => handleDelete(u.id)}
+                                                            title="Delete User"
+                                                        >
+                                                            🗑️
+                                                        </button>
+                                                    </div>
+                                                </td>
                                         </tr>
                                     ))
                                 )}
                             </tbody>
                         </table>
+                        <Pagination
+                            itemsPerPage={usersPerPage}
+                            totalItems={filteredUsers.length}
+                            paginate={(num) => setCurrentUserPage(num)}
+                            currentPage={currentUserPage}
+                        />
                     </div>
                 </div>
             </section>
@@ -240,12 +352,12 @@ const AdminPage = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredPhones.length === 0 ? (
+                                {currentPhones.length === 0 ? (
                                     <tr>
                                         <td colSpan={6} className="text-center">No phones found</td>
                                     </tr>
                                 ) : (
-                                    filteredPhones.map((p, idx) => (
+                                    currentPhones.map((p, idx) => (
                                         <tr key={idx}>
                                             <td>{p.ip}</td>
                                             <td>{p.extension}</td>
@@ -262,6 +374,12 @@ const AdminPage = () => {
                                 )}
                             </tbody>
                         </table>
+                        <Pagination
+                            itemsPerPage={phonesPerPage}
+                            totalItems={filteredPhones.length}
+                            paginate={(num) => setCurrentPhonePage(num)}
+                            currentPage={currentPhonePage}
+                        />
                     </div>
                 </div>
             </section>
@@ -271,8 +389,6 @@ const AdminPage = () => {
                 handleClose={handleModalClose}
                 handleSubmit={handleFormSubmit}
                 user={editingUser}
-                departments={departments}
-                stations={stations}
             />
         </div>
     );

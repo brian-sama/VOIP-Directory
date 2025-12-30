@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import logo from '../../assets/images.jfif';
 
 const AppNavbar = () => {
-    const { isAuthenticated, logout } = useAuth();
+    const { isAuthenticated, user, logout } = useAuth();
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -28,21 +28,34 @@ const AppNavbar = () => {
                     <Nav className="ms-auto">
                         {isAuthenticated ? (
                             <>
-                                <LinkContainer to="/">
-                                    <Nav.Link>Dashboard</Nav.Link>
-                                </LinkContainer>
-                                <LinkContainer to="/reports">
-                                    <Nav.Link>Reports</Nav.Link>
-                                </LinkContainer>
-                                <LinkContainer to="/admin">
-                                    <Nav.Link>Admin</Nav.Link>
-                                </LinkContainer>
+                                {user?.role === 'admin' ? (
+                                    <LinkContainer to="/">
+                                        <Nav.Link>Dashboard</Nav.Link>
+                                    </LinkContainer>
+                                ) : (
+                                    <LinkContainer to="/directory">
+                                        <Nav.Link>Directory</Nav.Link>
+                                    </LinkContainer>
+                                )}
+
+                                {user?.role === 'admin' && (
+                                    <>
+                                        <LinkContainer to="/reports">
+                                            <Nav.Link>Reports</Nav.Link>
+                                        </LinkContainer>
+                                        <LinkContainer to="/admin">
+                                            <Nav.Link>Admin</Nav.Link>
+                                        </LinkContainer>
+                                        <LinkContainer to="/activity">
+                                            <Nav.Link>Activity</Nav.Link>
+                                        </LinkContainer>
+                                    </>
+                                )}
+
                                 <LinkContainer to="/settings">
                                     <Nav.Link>Settings</Nav.Link>
                                 </LinkContainer>
-                                <LinkContainer to="/activity">
-                                    <Nav.Link>Activity</Nav.Link>
-                                </LinkContainer>
+
                                 <Nav.Link onClick={handleLogout}>Logout</Nav.Link>
                             </>
                         ) : (
@@ -53,7 +66,7 @@ const AppNavbar = () => {
                     </Nav>
                 </Navbar.Collapse>
             </Container>
-        </Navbar>
+        </Navbar >
     );
 };
 

@@ -14,6 +14,9 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/reports', require('./routes/reports'));
 app.use('/api/activity', require('./routes/activity'));
+app.use('/api/import', require('./routes/import'));
+app.use('/api/departments', require('./routes/departments'));
+app.use('/api/sections', require('./routes/sections'));
 
 const { startMonitoring } = require('./services/monitoringService');
 

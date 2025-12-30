@@ -221,3 +221,28 @@ body {
     box-shadow: 0 6px 18px rgba(102, 126, 234, 0.3);
     filter: brightness(1.1);
 }
+
+/* Utility Classes */
+.flex {
+    display: flex;
+}
+
+.gap-1 {
+    gap: 4px;
+}
+
+.gap-2 {
+    gap: 8px;
+}
+
+.align-center {
+    align-items: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.justify-end {
+    justify-content: flex-end;
+}
