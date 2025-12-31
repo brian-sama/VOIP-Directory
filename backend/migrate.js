@@ -58,7 +58,7 @@ const runMigration = async () => {
         `);
 
         await connection.query(`
-            CREATE TABLE IF NOT EXISTS sections (
+            CREATE TABLE IF NOT EXISTS stations (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 name VARCHAR(100) NOT NULL UNIQUE,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -74,6 +74,11 @@ const runMigration = async () => {
         const [existingSections] = await connection.query("SELECT COUNT(*) as count FROM sections");
         if (existingSections[0].count === 0) {
             await connection.query("INSERT IGNORE INTO sections (name) SELECT DISTINCT section FROM users WHERE section IS NOT NULL AND section != ''");
+        }
+
+        const [existingStations] = await connection.query("SELECT COUNT(*) as count FROM stations");
+        if (existingStations[0].count === 0) {
+            await connection.query("INSERT IGNORE INTO stations (name) SELECT DISTINCT station FROM users WHERE station IS NOT NULL AND station != ''");
         }
 
         await connection.commit();

@@ -3,6 +3,7 @@ import api from '../../api/axios';
 import UserEditModal from '../shared/UserEditModal';
 import Pagination from '../shared/Pagination';
 import { useToast } from '../../context/ToastContext';
+import { useAuth } from '../../context/AuthContext';
 
 const AdminPage = () => {
     const [activeTab, setActiveTab] = useState('users');
@@ -17,13 +18,16 @@ const AdminPage = () => {
     const [showModal, setShowModal] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
 
+    const { user } = useAuth();
+
     const switchTab = (tab) => {
         setActiveTab(tab);
     };
 
     const logActivity = async (action, details) => {
         try {
-            await api.post('/activity', { action, details, user_name: 'Admin' });
+            const userName = user?.user?.name_surname || user?.username || 'Admin';
+            await api.post('/activity', { action, details, user_name: userName });
         } catch (err) {
             console.error('Failed to log activity', err);
         }
@@ -90,6 +94,19 @@ const AdminPage = () => {
         }
     };
 
+    const handleRoleChange = async (user) => {
+        const newRole = user.role === 'admin' ? 'user' : 'admin';
+        try {
+            await api.put(`/users/${user.id}`, { ...user, role: newRole });
+            await logActivity('Changed user role', `Changed ${user.name_surname} role to ${newRole}`);
+            toast.success(`User "${user.name_surname}" role updated to ${newRole}!`);
+            await fetchUsers();
+        } catch (err) {
+            console.error('Failed to update user role', err);
+            toast.error('Failed to update user role.');
+        }
+    };
+
     // Derived lists and filtering
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
@@ -130,24 +147,6 @@ const AdminPage = () => {
     const indexOfLastPhone = currentPhonePage * phonesPerPage;
     const indexOfFirstPhone = indexOfLastPhone - phonesPerPage;
     const currentPhones = filteredPhones.slice(indexOfFirstPhone, indexOfLastPhone);
-
-    const addDepartment = (name) => {
-        if (!name) return;
-        setDepartments(prev => Array.from(new Set([name, ...prev])));
-    };
-
-    const removeDepartment = (name) => {
-        setDepartments(prev => prev.filter(d => d !== name));
-    };
-
-    const addStation = (name) => {
-        if (!name) return;
-        setStations(prev => Array.from(new Set([name, ...prev])));
-    };
-
-    const removeStation = (name) => {
-        setStations(prev => prev.filter(s => s !== name));
-    };
 
     return (
         <div className="container">
@@ -275,37 +274,36 @@ const AdminPage = () => {
                                             <td>{u.phone_model || ''}</td>
                                             <td>{u.mac_address || ''}</td>
                                             <td>
-                                                <td>
-                                                    <div style={{ display: 'flex', gap: '5px', justifyContent: 'center' }}>
-                                                        <button
-                                                            type="button"
-                                                            className={`btn btn-sm ${u.role === 'admin' ? 'btn-red' : 'btn-complete'}`}
-                                                            style={{ padding: '4px 8px', fontSize: '0.8rem', minWidth: '32px' }}
-                                                            onClick={() => handleRoleChange(u)}
-                                                            title={u.role === 'admin' ? "Revoke Admin" : "Make Admin"}
-                                                        >
-                                                            {u.role === 'admin' ? '👑' : '👤'}
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            className="btn btn-cerulean btn-sm"
-                                                            style={{ padding: '4px 8px' }}
-                                                            onClick={() => handleModalShow(u)}
-                                                            title="Edit User"
-                                                        >
-                                                            ✏️
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            className="btn btn-red btn-sm"
-                                                            style={{ padding: '4px 8px' }}
-                                                            onClick={() => handleDelete(u.id)}
-                                                            title="Delete User"
-                                                        >
-                                                            🗑️
-                                                        </button>
-                                                    </div>
-                                                </td>
+                                                <div style={{ display: 'flex', gap: '5px', justifyContent: 'center' }}>
+                                                    <button
+                                                        type="button"
+                                                        className={`btn btn-sm ${u.role === 'admin' ? 'btn-red' : 'btn-complete'}`}
+                                                        style={{ padding: '4px 8px', fontSize: '0.8rem', minWidth: '32px' }}
+                                                        onClick={() => handleRoleChange(u)}
+                                                        title={u.role === 'admin' ? "Revoke Admin" : "Make Admin"}
+                                                    >
+                                                        {u.role === 'admin' ? '👑' : '👤'}
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-cerulean btn-sm"
+                                                        style={{ padding: '4px 8px' }}
+                                                        onClick={() => handleModalShow(u)}
+                                                        title="Edit User"
+                                                    >
+                                                        ✏️
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-red btn-sm"
+                                                        style={{ padding: '4px 8px' }}
+                                                        onClick={() => handleDelete(u.id)}
+                                                        title="Delete User"
+                                                    >
+                                                        🗑️
+                                                    </button>
+                                                </div>
+                                            </td>
                                         </tr>
                                     ))
                                 )}

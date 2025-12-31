@@ -26,15 +26,14 @@ const UserEditModal = ({ show, handleClose, handleSubmit, user }) => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const [dRes, sRes, uRes] = await Promise.all([
+                const [dRes, sRes, stRes] = await Promise.all([
                     api.get('/departments'),
                     api.get('/sections'),
-                    api.get('/users')
+                    api.get('/stations')
                 ]);
                 setDepartments(dRes.data.map(d => d.name));
                 setSections(sRes.data.map(s => s.name));
-                const uniqueStations = Array.from(new Set(uRes.data.map(u => u.station).filter(Boolean))).sort();
-                setStations(uniqueStations);
+                setStations(stRes.data.map(st => st.name));
             } catch (err) {
                 console.error('Failed to fetch categories', err);
             }

@@ -15,6 +15,29 @@ router.post('/', async (req, res) => {
         return res.status(400).json({ msg: 'Please provide name, section, department, extension number, and IP address.' });
     }
 
+    try {
+        // Check for duplicate IP
+        const [existingIp] = await db.query(
+            'SELECT u.name_surname FROM extensions e JOIN users u ON e.user_id = u.id WHERE e.ip_address = ?',
+            [ip_address]
+        );
+        if (existingIp.length > 0) {
+            return res.status(400).json({ msg: `IP Address ${ip_address} is already assigned to ${existingIp[0].name_surname}.` });
+        }
+
+        // Check for duplicate Extension
+        const [existingExt] = await db.query(
+            'SELECT u.name_surname FROM extensions e JOIN users u ON e.user_id = u.id WHERE e.extension_number = ?',
+            [extension_number]
+        );
+        if (existingExt.length > 0) {
+            return res.status(400).json({ msg: `Extension ${extension_number} is already assigned to ${existingExt[0].name_surname}.` });
+        }
+    } catch (err) {
+        console.error('Validation error:', err);
+        return res.status(500).send('Server Error during validation');
+    }
+
     const connection = await db.getConnection();
     try {
         await connection.beginTransaction();
@@ -113,6 +136,29 @@ router.put('/:id', async (req, res) => {
 
     if (!name_surname || !extension_number || !ip_address) {
         return res.status(400).json({ msg: 'Please provide name, extension number, and IP address.' });
+    }
+
+    try {
+        // Check for duplicate IP (excluding this user)
+        const [existingIp] = await db.query(
+            'SELECT u.name_surname FROM extensions e JOIN users u ON e.user_id = u.id WHERE e.ip_address = ? AND u.id != ?',
+            [ip_address, userId]
+        );
+        if (existingIp.length > 0) {
+            return res.status(400).json({ msg: `IP Address ${ip_address} is already assigned to ${existingIp[0].name_surname}.` });
+        }
+
+        // Check for duplicate Extension (excluding this user)
+        const [existingExt] = await db.query(
+            'SELECT u.name_surname FROM extensions e JOIN users u ON e.user_id = u.id WHERE e.extension_number = ? AND u.id != ?',
+            [extension_number, userId]
+        );
+        if (existingExt.length > 0) {
+            return res.status(400).json({ msg: `Extension ${extension_number} is already assigned to ${existingExt[0].name_surname}.` });
+        }
+    } catch (err) {
+        console.error('Validation error:', err);
+        return res.status(500).send('Server Error during validation');
     }
 
     const connection = await db.getConnection();

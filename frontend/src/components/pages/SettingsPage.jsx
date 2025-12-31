@@ -16,15 +16,15 @@ const SettingsPage = () => {
 
     const fetchData = async () => {
         try {
-            const [dRes, sRes, uRes] = await Promise.all([
+            const [dRes, sRes, uRes, stRes] = await Promise.all([
                 api.get('/departments'),
                 api.get('/sections'),
-                api.get('/users')
+                api.get('/users'),
+                api.get('/stations')
             ]);
             setDepartments(dRes.data);
             setSections(sRes.data);
-            // Deriving unique stations from users for now
-            setStations(Array.from(new Set(uRes.data.map(u => u.station).filter(Boolean))).sort());
+            setStations(stRes.data);
         } catch (err) {
             console.error('Failed to fetch settings data', err);
             toast.error('Failed to load settings');
@@ -71,6 +71,28 @@ const SettingsPage = () => {
                 fetchData();
             } catch (err) {
                 toast.error('Failed to remove section');
+            }
+        }
+    };
+
+    const addStation = async (name) => {
+        try {
+            await api.post('/stations', { name });
+            toast.success(`Station "${name}" added`);
+            fetchData();
+        } catch (err) {
+            toast.error('Failed to add station');
+        }
+    };
+
+    const removeStation = async (id, name) => {
+        if (window.confirm(`Remove station "${name}"? This won't delete users.`)) {
+            try {
+                await api.delete(`/stations/${id}`);
+                toast.success('Station removed');
+                fetchData();
+            } catch (err) {
+                toast.error('Failed to remove station');
             }
         }
     };
@@ -152,22 +174,37 @@ const SettingsPage = () => {
                         </div>
                     </div>
 
-                    {/* Stations - Only for Admins as requested */}
+                    {/* Stations */}
                     <div className="card">
                         <div className="card-header">
                             <h2>Stations</h2>
                         </div>
                         <div style={{ padding: '16px' }}>
-                            <div className="alert-info p-2 mb-3 small">
-                                Stations are derived from user records. Currently managing {stations.length} unique stations.
+                            <form onSubmit={(e) => {
+                                e.preventDefault();
+                                const name = e.target.stName.value.trim();
+                                if (name) {
+                                    addStation(name);
+                                    e.target.stName.value = '';
+                                }
+                            }}>
+                                <div className="form-group">
+                                    <label className="form-label">New Station</label>
+                                    <input type="text" name="stName" className="form-control" placeholder="e.g., Station A" required />
+                                </div>
+                                <button type="submit" className="btn btn-cerulean mt-2">Add</button>
+                            </form>
+                            <div className="mt-4">
+                                <h3 className="h6 text-muted">Current Stations</h3>
+                                <ul className="list-group">
+                                    {stations.map(s => (
+                                        <li key={s.id} className="list-group-item d-flex justify-between align-center">
+                                            <span>{s.name}</span>
+                                            <button className="btn btn-outline btn-sm" onClick={() => removeStation(s.id, s.name)}>Remove</button>
+                                        </li>
+                                    ))}
+                                </ul>
                             </div>
-                            <ul className="list-group">
-                                {stations.map((s, idx) => (
-                                    <li key={idx} className="list-group-item">
-                                        <span>{s}</span>
-                                    </li>
-                                ))}
-                            </ul>
                         </div>
                     </div>
                 </div>
