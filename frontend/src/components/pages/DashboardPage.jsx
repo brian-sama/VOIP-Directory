@@ -175,23 +175,31 @@ const DashboardPage = () => {
     const sipRegisteredCount = extensions.filter(ext => ext.sip_status === 'Registered').length;
     const sipUnregisteredCount = extensions.filter(ext => ext.sip_status === 'Unregistered').length;
 
-    // Export to CSV
+    // Export to CSV (matching import template format)
     const exportToCSV = () => {
-        const headers = ['Status', 'SIP Status', 'IP Address', 'User Name', 'Extension', 'Department', 'Section', 'Station', 'Model', 'Designation', 'Office Number', 'Last Seen'];
-        const rows = processedData.map(ext => [
-            ext.status || 'Offline',
-            ext.sip_status || 'Unknown',
-            ext.ip_address || '',
-            ext.name_surname,
-            ext.extension_number || '',
-            ext.department || '',
-            ext.section || '',
-            ext.station || '',
-            ext.phone_model || '',
-            ext.designation || '',
-            ext.office_number || '',
-            ext.last_seen || ''
-        ]);
+        // Headers match the import template exactly
+        const headers = ['Name', 'Surname', 'Department', 'Section', 'Office Number', 'Designation', 'Station', 'Extension', 'IP Address', 'Model', 'Mac Address'];
+        const rows = processedData.map(ext => {
+            // Split name_surname into Name and Surname
+            const fullName = ext.name_surname || '';
+            const nameParts = fullName.trim().split(/\s+/);
+            const firstName = nameParts[0] || '';
+            const surname = nameParts.slice(1).join(' ') || '';
+            
+            return [
+                firstName,
+                surname,
+                ext.department || '',
+                ext.section || '',
+                ext.office_number || '',
+                ext.designation || '',
+                ext.station || '',
+                ext.extension_number || '',
+                ext.ip_address || '',
+                ext.phone_model || '',
+                ext.mac_address || ''
+            ];
+        });
 
         const csvContent = [headers, ...rows]
             .map(row => row.map(cell => `"${cell}"`).join(','))
@@ -201,7 +209,7 @@ const DashboardPage = () => {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `voip_phones_${new Date().toISOString().split('T')[0]}.csv`;
+        link.download = `voip_users_${new Date().toISOString().split('T')[0]}.csv`;
         link.click();
         URL.revokeObjectURL(url);
 

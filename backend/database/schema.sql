@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS users (
   password VARCHAR(255), -- Will be extension number
   department VARCHAR(100),
   section VARCHAR(100), -- Mandatory field
-  office_number VARCHAR(20),
+  office_number VARCHAR(100),
   designation VARCHAR(100),
   station VARCHAR(100),
   role ENUM('admin', 'user') DEFAULT 'user',
