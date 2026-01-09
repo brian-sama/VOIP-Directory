@@ -1,10 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
+const { runDirectoryCleanup } = require('../services/cleanupService');
 
-// @route   POST api/users
-// @desc    Add a new user and their extension
-// @access  Private (to be protected by auth middleware)
 // @route   POST api/users
 // @desc    Add a new user and their extension
 // @access  Private (to be protected by auth middleware)
@@ -230,6 +228,22 @@ router.delete('/:id', async (req, res) => {
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
+    }
+});
+
+// @route   POST api/users/cleanup
+// @desc    Remove duplicate users by name_surname (trimming them first)
+// @access  Private
+router.post('/cleanup', async (req, res) => {
+    try {
+        const stats = await runDirectoryCleanup();
+        res.json({
+            msg: `Cleanup successful. Removed ${stats.removedCount} duplicate users and merged ${stats.mergedExtensions} extensions.`,
+            ...stats
+        });
+    } catch (err) {
+        console.error('Cleanup error:', err);
+        res.status(500).json({ msg: 'Server Error during cleanup' });
     }
 });
 

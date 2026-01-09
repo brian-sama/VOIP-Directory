@@ -107,6 +107,20 @@ const AdminPage = () => {
         }
     };
 
+    const handleCleanup = async () => {
+        if (!window.confirm('This will search for users with the same name and merge them. It will also trim whitespace from names. Proceeed?')) return;
+
+        try {
+            toast.info('Cleaning up duplicates...');
+            const { data } = await api.post('/users/cleanup');
+            toast.success(data.msg);
+            await fetchUsers();
+        } catch (err) {
+            console.error('Failed to cleanup users', err);
+            toast.error(err.response?.data?.msg || 'Failed to cleanup users.');
+        }
+    };
+
     // Derived lists and filtering
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
@@ -174,33 +188,44 @@ const AdminPage = () => {
                                     if (e.target.files && e.target.files[0]) {
                                         const file = e.target.files[0];
                                         console.log('File selected for import:', file.name, 'Size:', file.size, 'Type:', file.type);
-                                        
+
                                         const formData = new FormData();
                                         formData.append('file', file);
 
                                         try {
                                             toast.info('Uploading and importing...');
                                             console.log('Sending import request to:', api.defaults.baseURL + '/import/users');
-                                            
+
                                             const res = await api.post('/import/users', formData, {
                                                 headers: { 'Content-Type': 'multipart/form-data' }
                                             });
-                                            
+
                                             console.log('Import response:', res.data);
-                                            
+
+                                            // Always show summary popup
+                                            const summary = res.data.msg || 'Import completed';
+                                            const imported = res.data.importedCount || 0;
+                                            const skipped = res.data.skippedCount || 0;
+
+                                            let alertMessage = `${summary}\n\n📊 Summary:\n• New users added: ${imported}\n• Existing extensions skipped: ${skipped}`;
+
                                             if (res.data.errors && res.data.errors.length > 0) {
                                                 console.warn('Import errors:', res.data.errors);
-                                                // Alert the user about errors
-                                                alert(`Import completed with ${res.data.errors.length} errors/warnings:\n\n${res.data.errors.join('\n')}`);
-                                                toast.warning(`Imported with ${res.data.errors.length} errors. Check alert.`);
+                                                alertMessage += `\n\n⚠️ Warnings (${res.data.errors.length}):\n${res.data.errors.slice(0, 10).join('\n')}`;
+                                                if (res.data.errors.length > 10) {
+                                                    alertMessage += `\n... and ${res.data.errors.length - 10} more`;
+                                                }
+                                                toast.warning(`Import completed with ${res.data.errors.length} warnings`);
                                             } else {
-                                                toast.success(res.data.msg || 'Import successful!');
+                                                toast.success(summary);
                                             }
-                                            
+
+                                            alert(alertMessage);
+
                                             console.log('Fetching users after import...');
                                             await fetchUsers();
                                             console.log('Users after import:', users.length);
-                                            
+
                                         } catch (err) {
                                             console.error('Import error details:', {
                                                 message: err.message,
@@ -208,7 +233,7 @@ const AdminPage = () => {
                                                 status: err.response?.status,
                                                 statusText: err.response?.statusText
                                             });
-                                            
+
                                             // More detailed error message
                                             let errorMsg = 'Import Failed: ';
                                             if (err.code === 'ERR_NETWORK') {
@@ -218,7 +243,7 @@ const AdminPage = () => {
                                             } else {
                                                 errorMsg += err.response?.data?.msg || err.message;
                                             }
-                                            
+
                                             alert(errorMsg);
                                             toast.error('Import failed. Check console for details (F12).');
                                         }
@@ -238,6 +263,7 @@ const AdminPage = () => {
                                 URL.revokeObjectURL(url);
                             }}>Download Template</button>
                             <button className="btn btn-secondary btn-sm" onClick={() => document.getElementById('importFile').click()}>Import Users</button>
+                            <button className="btn btn-outline-danger btn-sm" onClick={handleCleanup}>Cleanup Duplicates</button>
                             <button className="btn btn-cerulean" onClick={() => handleModalShow()}>Add User</button>
                         </div>
                     </div>

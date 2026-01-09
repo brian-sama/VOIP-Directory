@@ -20,6 +20,7 @@ app.use('/api/sections', require('./routes/sections'));
 app.use('/api/stations', require('./routes/stations'));
 
 const { startMonitoring } = require('./services/monitoringService');
+const { startCleanupTask } = require('./services/cleanupService');
 
 app.get('/', (req, res) => {
   res.send('BCC VOIP Directory Backend is running...');
@@ -30,4 +31,6 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   // Start the monitoring service
   startMonitoring();
+  // Start the cleanup service
+  startCleanupTask();
 });
