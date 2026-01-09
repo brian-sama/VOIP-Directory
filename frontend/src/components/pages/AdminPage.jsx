@@ -173,14 +173,21 @@ const AdminPage = () => {
                                 onChange={async (e) => {
                                     if (e.target.files && e.target.files[0]) {
                                         const file = e.target.files[0];
+                                        console.log('File selected for import:', file.name, 'Size:', file.size, 'Type:', file.type);
+                                        
                                         const formData = new FormData();
                                         formData.append('file', file);
 
                                         try {
                                             toast.info('Uploading and importing...');
+                                            console.log('Sending import request to:', api.defaults.baseURL + '/import/users');
+                                            
                                             const res = await api.post('/import/users', formData, {
                                                 headers: { 'Content-Type': 'multipart/form-data' }
                                             });
+                                            
+                                            console.log('Import response:', res.data);
+                                            
                                             if (res.data.errors && res.data.errors.length > 0) {
                                                 console.warn('Import errors:', res.data.errors);
                                                 // Alert the user about errors
@@ -189,12 +196,31 @@ const AdminPage = () => {
                                             } else {
                                                 toast.success(res.data.msg || 'Import successful!');
                                             }
-                                            fetchUsers();
+                                            
+                                            console.log('Fetching users after import...');
+                                            await fetchUsers();
+                                            console.log('Users after import:', users.length);
+                                            
                                         } catch (err) {
-                                            console.error(err);
-                                            // Alert failure
-                                            alert(`Import Failed: ${err.response?.data?.msg || err.message}`);
-                                            toast.error('Import failed.');
+                                            console.error('Import error details:', {
+                                                message: err.message,
+                                                response: err.response?.data,
+                                                status: err.response?.status,
+                                                statusText: err.response?.statusText
+                                            });
+                                            
+                                            // More detailed error message
+                                            let errorMsg = 'Import Failed: ';
+                                            if (err.code === 'ERR_NETWORK') {
+                                                errorMsg += 'Cannot connect to backend server. Is the server running?';
+                                            } else if (err.response?.status === 500) {
+                                                errorMsg += `Server error - ${err.response?.data?.msg || 'Database may not be configured correctly'}`;
+                                            } else {
+                                                errorMsg += err.response?.data?.msg || err.message;
+                                            }
+                                            
+                                            alert(errorMsg);
+                                            toast.error('Import failed. Check console for details (F12).');
                                         }
                                         e.target.value = null; // Reset input
                                     }
