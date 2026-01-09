@@ -51,6 +51,14 @@ async function updateExtensionStatus(extensionId, status, logResult, sipPortOpen
         const now = new Date();
         const lastSeen = status === 'Online' ? now : null;
 
+        // Check if extension still exists
+        const [exists] = await connection.query('SELECT id FROM extensions WHERE id = ?', [extensionId]);
+        if (exists.length === 0) {
+            // Extension was deleted, skip
+            await connection.rollback();
+            return;
+        }
+
         // Update main status and SIP status
         await connection.query(
             `UPDATE extensions SET 
@@ -72,7 +80,10 @@ async function updateExtensionStatus(extensionId, status, logResult, sipPortOpen
         await connection.commit();
     } catch (err) {
         await connection.rollback();
-        console.error(`[Monitoring Service] Error updating extension ${extensionId}:`, err);
+        // Silently ignore foreign key errors (extension was deleted)
+        if (err.code !== 'ER_NO_REFERENCED_ROW_2') {
+            console.error(`[Monitoring Service] Error updating extension ${extensionId}:`, err);
+        }
     } finally {
         connection.release();
     }
