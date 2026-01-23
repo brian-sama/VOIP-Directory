@@ -47,8 +47,39 @@ const runMigration = async () => {
         if (!existingExtColumns.includes('mac_address')) await connection.query("ALTER TABLE extensions ADD COLUMN mac_address VARCHAR(50)");
         if (!existingExtColumns.includes('phone_model')) await connection.query("ALTER TABLE extensions ADD COLUMN phone_model VARCHAR(100)");
 
-        // 3. Departments and Sections Tables
-        console.log('Creating departments and sections tables...');
+        // 3. Activity Logs Table
+        console.log('Creating activity_logs table...');
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS activity_logs (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                action VARCHAR(100) NOT NULL,
+                details TEXT,
+                user_name VARCHAR(100) DEFAULT 'System',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // 4. Schema Refinement (NULLs and lengths)
+        console.log('Refining schema (NULLs and lengths)...');
+        await connection.query("ALTER TABLE users MODIFY COLUMN office_number VARCHAR(100)");
+        await connection.query("ALTER TABLE extensions MODIFY ip_address VARCHAR(45) NULL");
+        await connection.query("ALTER TABLE extensions MODIFY mac_address VARCHAR(45) NULL");
+        await connection.query("ALTER TABLE extensions MODIFY phone_model VARCHAR(50) NULL");
+
+        // 5. SIP Status Tracking
+        console.log('Checking/Adding SIP status columns...');
+        const [sipCols] = await connection.query("SHOW COLUMNS FROM extensions LIKE 'sip_status'");
+        if (sipCols.length === 0) {
+            await connection.query(`
+                ALTER TABLE extensions 
+                ADD COLUMN sip_status ENUM('Registered', 'Unregistered', 'Unknown') DEFAULT 'Unknown',
+                ADD COLUMN sip_port_open TINYINT(1) DEFAULT NULL,
+                ADD COLUMN sip_last_checked DATETIME DEFAULT NULL
+            `);
+        }
+
+        // 6. Departments and Stations Tables
+        console.log('Creating departments and stations tables...');
         await connection.query(`
             CREATE TABLE IF NOT EXISTS departments (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -73,7 +104,21 @@ const runMigration = async () => {
 
         const [existingSections] = await connection.query("SELECT COUNT(*) as count FROM sections");
         if (existingSections[0].count === 0) {
-            await connection.query("INSERT IGNORE INTO sections (name) SELECT DISTINCT section FROM users WHERE section IS NOT NULL AND section != ''");
+            // Check if sections table exists first (migration 5.7+ fix)
+            const [tables] = await connection.query("SHOW TABLES LIKE 'sections'");
+            if (tables.length > 0) {
+                await connection.query("INSERT IGNORE INTO sections (name) SELECT DISTINCT section FROM users WHERE section IS NOT NULL AND section != ''");
+            } else {
+                // Actually create sections table if missed
+                await connection.query(`
+                    CREATE TABLE IF NOT EXISTS sections (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        name VARCHAR(100) NOT NULL UNIQUE,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                `);
+                await connection.query("INSERT IGNORE INTO sections (name) SELECT DISTINCT section FROM users WHERE section IS NOT NULL AND section != ''");
+            }
         }
 
         const [existingStations] = await connection.query("SELECT COUNT(*) as count FROM stations");

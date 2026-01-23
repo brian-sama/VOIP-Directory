@@ -40,14 +40,11 @@ const AppNavbar = () => {
 
                                 {user?.role === 'admin' && (
                                     <>
-                                        <LinkContainer to="/reports">
-                                            <Nav.Link>Reports</Nav.Link>
+                                        <LinkContainer to="/logs">
+                                            <Nav.Link>Logs & Reports</Nav.Link>
                                         </LinkContainer>
                                         <LinkContainer to="/admin">
                                             <Nav.Link>Admin</Nav.Link>
-                                        </LinkContainer>
-                                        <LinkContainer to="/activity">
-                                            <Nav.Link>Activity</Nav.Link>
                                         </LinkContainer>
                                     </>
                                 )}

@@ -17,6 +17,7 @@ const UserEditModal = ({ show, handleClose, handleSubmit, user }) => {
         ip_address: '',
         mac_address: '',
         phone_model: '',
+        role: 'user',
     });
 
     const [customDepartment, setCustomDepartment] = useState(false);
@@ -27,9 +28,9 @@ const UserEditModal = ({ show, handleClose, handleSubmit, user }) => {
         const fetchCategories = async () => {
             try {
                 const [dRes, sRes, stRes] = await Promise.all([
-                    api.get('/departments'),
-                    api.get('/sections'),
-                    api.get('/stations')
+                    api.get('/metadata/departments'),
+                    api.get('/metadata/sections'),
+                    api.get('/metadata/stations')
                 ]);
                 setDepartments(dRes.data.map(d => d.name));
                 setSections(sRes.data.map(s => s.name));
@@ -54,6 +55,7 @@ const UserEditModal = ({ show, handleClose, handleSubmit, user }) => {
                 ip_address: user.ip_address || '',
                 mac_address: user.mac_address || '',
                 phone_model: user.phone_model || '',
+                role: user.role || 'user',
             });
             setCustomDepartment(user.department && !departments.includes(user.department));
             setCustomSection(user.section && !sections.includes(user.section));
@@ -61,7 +63,7 @@ const UserEditModal = ({ show, handleClose, handleSubmit, user }) => {
         } else {
             setFormData({
                 name_surname: '', department: '', section: '', office_number: '', designation: '', station: '',
-                extension_number: '', ip_address: '', mac_address: '', phone_model: '',
+                extension_number: '', ip_address: '', mac_address: '', phone_model: '', role: 'user',
             });
             setCustomDepartment(false);
             setCustomSection(false);
@@ -97,6 +99,16 @@ const UserEditModal = ({ show, handleClose, handleSubmit, user }) => {
 
     const onFormSubmit = (e) => {
         e.preventDefault();
+
+        // IP Address Validation
+        if (formData.ip_address) {
+            const ipRegex = /^[0-9.]+$/;
+            if (!ipRegex.test(formData.ip_address)) {
+                alert('IP Address can only contain numbers and dots.');
+                return;
+            }
+        }
+
         handleSubmit(formData);
     };
 
@@ -110,6 +122,14 @@ const UserEditModal = ({ show, handleClose, handleSubmit, user }) => {
                     <Form.Group className="mb-3">
                         <Form.Label>Name & Surname</Form.Label>
                         <Form.Control type="text" name="name_surname" value={formData.name_surname} onChange={handleChange} required />
+                    </Form.Group>
+
+                    <Form.Group className="mb-3">
+                        <Form.Label>Role</Form.Label>
+                        <Form.Select name="role" value={formData.role} onChange={handleChange}>
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                        </Form.Select>
                     </Form.Group>
 
                     <Form.Group className="mb-3">
@@ -221,11 +241,20 @@ const UserEditModal = ({ show, handleClose, handleSubmit, user }) => {
                     </Form.Group>
                     <Form.Group className="mb-3">
                         <Form.Label>Extension Number</Form.Label>
-                        <Form.Control type="text" name="extension_number" value={formData.extension_number} onChange={handleChange} required />
+                        <Form.Control type="text" name="extension_number" value={formData.extension_number} onChange={handleChange} />
                     </Form.Group>
                     <Form.Group className="mb-3">
                         <Form.Label>IP Address</Form.Label>
-                        <Form.Control type="text" name="ip_address" value={formData.ip_address} onChange={handleChange} required />
+                        <Form.Control
+                            type="text"
+                            name="ip_address"
+                            value={formData.ip_address}
+                            onChange={handleChange}
+                            placeholder="e.g. 192.168.1.1"
+                        />
+                        <Form.Text className="text-muted">
+                            Numbers and dots only.
+                        </Form.Text>
                     </Form.Group>
                     <Form.Group className="mb-3">
                         <Form.Label>MAC Address</Form.Label>

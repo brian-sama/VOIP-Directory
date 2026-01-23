@@ -10,17 +10,9 @@ app.use(cors());
 app.use(express.json());
 
 // Define Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/users', require('./routes/users'));
-app.use('/api/reports', require('./routes/reports'));
-app.use('/api/activity', require('./routes/activity'));
-app.use('/api/import', require('./routes/import'));
-app.use('/api/departments', require('./routes/departments'));
-app.use('/api/sections', require('./routes/sections'));
-app.use('/api/stations', require('./routes/stations'));
+app.use('/api', require('./routes/api'));
 
-const { startMonitoring } = require('./services/monitoringService');
-const { startCleanupTask } = require('./services/cleanupService');
+const { startServices } = require('./services');
 
 app.get('/', (req, res) => {
   res.send('BCC VOIP Directory Backend is running...');
@@ -29,8 +21,5 @@ app.get('/', (req, res) => {
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-  // Start the monitoring service
-  startMonitoring();
-  // Start the cleanup service
-  startCleanupTask();
+  startServices();
 });
