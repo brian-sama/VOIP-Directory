@@ -25,8 +25,8 @@ router.post('/auth/login', async (req, res) => {
         if (userRows.length > 0 && password === userRows[0].password) {
             return res.json({
                 msg: 'Login successful',
-                role: 'user',
-                user: { username: userRows[0].name_surname, department: userRows[0].department, section: userRows[0].section }
+                role: userRows[0].role || 'user',
+                user: { username: userRows[0].name_surname, department: userRows[0].department, section: userRows[0].section, role: userRows[0].role || 'user' }
             });
         }
         return res.status(400).json({ msg: 'Invalid credentials' });
