@@ -5,6 +5,7 @@ import DashboardPage from './components/pages/DashboardPage';
 import SettingsPage from './components/pages/SettingsPage';
 import LogsPage from './components/pages/LogsPage';
 import DirectoryPage from './components/pages/DirectoryPage';
+import AdminPage from './components/pages/AdminPage';
 import PrivateRoute from './components/routing/PrivateRoute';
 import './App.css';
 
