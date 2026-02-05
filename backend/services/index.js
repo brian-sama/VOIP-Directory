@@ -69,9 +69,15 @@ async function runDirectoryCleanup() {
 }
 
 // --- MONITORING SERVICE ---
+let isChecking = false;
+
 async function checkExtensions() {
+    if (isChecking) return;
+    isChecking = true;
+
+    const connection = await db.getConnection();
     try {
-        const [exts] = await db.query('SELECT id, ip_address, extension_number FROM extensions');
+        const [exts] = await connection.query('SELECT id, ip_address, extension_number FROM extensions');
         if (exts.length === 0) return;
         const yStatuses = await yeastar.getAllStatuses();
         for (const e of exts) {
@@ -86,11 +92,16 @@ async function checkExtensions() {
                 else sipStatus = sipPortOpen ? 'Registered' : 'Unregistered';
             }
             const now = new Date();
-            await db.query('UPDATE extensions SET status = ?, last_seen = ?, sip_port_open = ?, sip_status = ?, sip_last_checked = ? WHERE id = ?',
+            await connection.query('UPDATE extensions SET status = ?, last_seen = ?, sip_port_open = ?, sip_status = ?, sip_last_checked = ? WHERE id = ?',
                 [pRes.alive ? 'Online' : 'Offline', pRes.alive ? now : null, sipPortOpen, sipStatus, now, e.id]);
-            await db.query('INSERT INTO ping_logs (extension_id, ping_time, result) VALUES (?, ?, ?)', [e.id, now, pRes.alive ? 'Success' : 'Failed']);
+            await connection.query('INSERT INTO ping_logs (extension_id, ping_time, result) VALUES (?, ?, ?)', [e.id, now, pRes.alive ? 'Success' : 'Failed']);
         }
-    } catch (err) { console.error('[Monitoring] Error:', err.message); }
+    } catch (err) {
+        console.error('[Monitoring] Error:', err.message);
+    } finally {
+        connection.release();
+        isChecking = false;
+    }
 }
 
 // --- STARTUP ---

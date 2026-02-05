@@ -36,6 +36,7 @@ import { socketService } from './services/socketService';
 import { useAuth } from './context/AuthContext';
 import { useToast } from './context/ToastContext';
 import { LoginPage } from './components/pages/LoginPage';
+// @ts-ignore
 import logo from './assets/logo.jpg';
 
 type View = 'DASHBOARD' | 'DIRECTORY' | 'ADMIN' | 'REPORTS' | 'LOGS';
@@ -399,7 +400,7 @@ const App: React.FC = () => {
 
             <div className="flex items-center gap-3 group">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-black text-slate-900 leading-none">{authUser?.username}</p>
+                <p className="text-sm font-bold text-slate-900 leading-none capitalize">{authUser?.username?.toLowerCase().replace(/_/g, ' ')}</p>
                 <p className="text-[10px] font-black text-slate-400 mt-1 uppercase">{authUser?.role}</p>
               </div>
               <button onClick={() => { if (confirm('Exit Session?')) logout(); }} title="Logout" aria-label="Logout" className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center hover:bg-rose-600 transition-all shadow-lg hover:shadow-rose-100">
@@ -451,26 +452,28 @@ const App: React.FC = () => {
 
         {activeView === 'DIRECTORY' && (
           <div className="card shadow-2xl shadow-slate-200/50 animate-fade-in border-none">
-            <div className="p-8 border-b border-slate-100 flex flex-col xl:flex-row gap-6">
-              <div className="relative flex-1">
+            <div className={`p-8 border-b border-slate-100 flex flex-col ${isAdmin ? 'xl:flex-row gap-6' : ''}`}>
+              <div className={`relative ${isAdmin ? 'flex-1' : 'max-w-2xl mx-auto w-full'}`}>
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input type="text" placeholder="Search Master Directory..." className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl pl-14 pr-6 text-sm font-bold outline-none focus:ring-4 focus:ring-blue-100 transition-all" value={searchQuery} onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }} />
               </div>
-              <div className="flex gap-4 flex-wrap">
-                <select title="Filter by Department" className="h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 text-xs font-black uppercase outline-none focus:ring-4 focus:ring-blue-100" value={filterDept} onChange={e => { setFilterDept(e.target.value); setCurrentPage(1); }}>
-                  <option value="ALL">All Departments</option>
-                  {depts.map((d: any) => <option key={d.id} value={d.name}>{d.name}</option>)}
-                </select>
-                <select title="Filter by Section" className="h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 text-xs font-black uppercase outline-none focus:ring-4 focus:ring-blue-100" value={filterSection} onChange={e => { setFilterSection(e.target.value); setCurrentPage(1); }}>
-                  <option value="ALL">All Sections</option>
-                  {sections.map((s: any) => <option key={s.id} value={s.name}>{s.name}</option>)}
-                </select>
-                <select title="Filter by Status" className="h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 text-xs font-black uppercase outline-none focus:ring-4 focus:ring-blue-100" value={filterStatus} onChange={e => { setFilterStatus(e.target.value); setCurrentPage(1); }}>
-                  <option value="ALL">All Statuses</option>
-                  <option value="ONLINE">Online / Registered</option>
-                  <option value="OFFLINE">Offline / Unregistered</option>
-                </select>
-              </div>
+              {isAdmin && (
+                <div className="flex gap-4 flex-wrap">
+                  <select title="Filter by Department" className="h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 text-xs font-black uppercase outline-none focus:ring-4 focus:ring-blue-100" value={filterDept} onChange={e => { setFilterDept(e.target.value); setCurrentPage(1); }}>
+                    <option value="ALL">All Departments</option>
+                    {depts.map((d: any) => <option key={d.id} value={d.name}>{d.name}</option>)}
+                  </select>
+                  <select title="Filter by Section" className="h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 text-xs font-black uppercase outline-none focus:ring-4 focus:ring-blue-100" value={filterSection} onChange={e => { setFilterSection(e.target.value); setCurrentPage(1); }}>
+                    <option value="ALL">All Sections</option>
+                    {sections.map((s: any) => <option key={s.id} value={s.name}>{s.name}</option>)}
+                  </select>
+                  <select title="Filter by Status" className="h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 text-xs font-black uppercase outline-none focus:ring-4 focus:ring-blue-100" value={filterStatus} onChange={e => { setFilterStatus(e.target.value); setCurrentPage(1); }}>
+                    <option value="ALL">All Statuses</option>
+                    <option value="ONLINE">Online / Registered</option>
+                    <option value="OFFLINE">Offline / Unregistered</option>
+                  </select>
+                </div>
+              )}
             </div>
 
             <div className="overflow-x-auto min-h-[600px]">
