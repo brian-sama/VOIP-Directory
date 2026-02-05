@@ -1,0 +1,4 @@
+Name Surname,Extension,IP Address,Department,Section,Office Number,Designation,Phone Model,Mac Address,Station
+"John Doe","8001","192.168.10.50","IT","Network","Room 101","Systems Administrator","Cisco 7965","00:11:22:33:44:55","Desk 1"
+"Jane Smith","8002","192.168.10.51","Finance","Accounts","Room 205","Accountant","Yealink T46S","AA:BB:CC:DD:EE:FF","Desk 12"
+"James Wilson","8003","192.168.10.52","Human Resources","Recruitment","Room 301","HR Manager","Polycom VVX 400","11:22:33:44:55:66","Desk 5"

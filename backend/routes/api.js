@@ -12,22 +12,58 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 // --- AUTH ROUTES ---
+const { generateToken } = require('../middleware/auth');
+
 // @route   POST api/auth/login
 router.post('/auth/login', async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) return res.status(400).json({ msg: 'Please enter all fields' });
     try {
+        // Normalize username for comparison: lowercase and remove spaces
+        const normalizedUsername = username.toLowerCase().replace(/\s+/g, '');
+
         const [adminRows] = await db.query('SELECT * FROM admins WHERE username = ?', [username]);
         if (adminRows.length > 0 && password === adminRows[0].password) {
-            return res.json({ msg: 'Login successful', role: 'admin', user: { username: adminRows[0].username } });
-        }
-        const [userRows] = await db.query('SELECT * FROM users WHERE name_surname = ? OR username = ?', [username, username]);
-        if (userRows.length > 0 && password === userRows[0].password) {
-            return res.json({
-                msg: 'Login successful',
-                role: userRows[0].role || 'user',
-                user: { username: userRows[0].name_surname, department: userRows[0].department, section: userRows[0].section, role: userRows[0].role || 'user' }
+            const user = { id: adminRows[0].id, username: adminRows[0].username, role: 'admin' };
+            const token = generateToken(user);
+
+            // Set JWT in httpOnly cookie
+            res.cookie('token', token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
             });
+
+            return res.json({ msg: 'Login successful', role: 'admin', user, token });
+        }
+
+        // Query all users and check with normalized comparison
+        const [userRows] = await db.query('SELECT * FROM users');
+        const matchedUser = userRows.find(user => {
+            const normalizedNameSurname = (user.name_surname || '').toLowerCase().replace(/\s+/g, '');
+            const normalizedUserUsername = (user.username || '').toLowerCase().replace(/\s+/g, '');
+            return normalizedNameSurname === normalizedUsername || normalizedUserUsername === normalizedUsername;
+        });
+
+        if (matchedUser && password === matchedUser.password) {
+            const user = {
+                id: matchedUser.id,
+                username: matchedUser.name_surname,
+                department: matchedUser.department,
+                section: matchedUser.section,
+                role: matchedUser.role || 'user'
+            };
+            const token = generateToken(user);
+
+            res.cookie('token', token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                maxAge: 7 * 24 * 60 * 60 * 1000
+            });
+
+            return res.json({ msg: 'Login successful', role: user.role, user, token });
         }
         return res.status(400).json({ msg: 'Invalid credentials' });
     } catch (err) {
@@ -39,8 +75,27 @@ router.post('/auth/login', async (req, res) => {
 // --- USER ROUTES ---
 // @route   POST api/users
 router.post('/users', async (req, res) => {
-    const { name_surname, department, section, office_number, designation, station, extension_number, ip_address, mac_address, phone_model, role } = req.body;
+    let { name_surname, department, section, office_number, designation, station, extension_number, ip_address, mac_address, phone_model, role } = req.body;
+
     if (!name_surname) return res.status(400).json({ msg: 'Please provide name & surname.' });
+
+    // Normalize username: lowercase and remove spaces
+    const normalizeUsername = (name) => name.toLowerCase().replace(/\s+/g, '');
+    const username = normalizeUsername(name_surname);
+
+    // Sanitize empty strings to null
+    const toNull = (val) => (val && val.trim() !== '') ? val.trim() : null;
+
+    ip_address = toNull(ip_address);
+    extension_number = toNull(extension_number);
+    department = toNull(department);
+    section = toNull(section);
+    office_number = toNull(office_number);
+    designation = toNull(designation);
+    station = toNull(station);
+    mac_address = toNull(mac_address);
+    phone_model = toNull(phone_model);
+
     try {
         if (ip_address) {
             const [existingIp] = await db.query('SELECT u.name_surname FROM extensions e JOIN users u ON e.user_id = u.id WHERE e.ip_address = ?', [ip_address]);
@@ -53,15 +108,15 @@ router.post('/users', async (req, res) => {
         const password = extension_number || '1234';
         const [userResult] = await db.query(
             'INSERT INTO users (name_surname, username, password, department, section, office_number, designation, station, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [name_surname, name_surname, password, department || null, section || null, office_number || null, designation || null, station || null, role || 'user']
+            [name_surname, username, password, department, section, office_number, designation, station, role || 'user']
         );
         await db.query(
             'INSERT INTO extensions (user_id, extension_number, ip_address, mac_address, phone_model) VALUES (?, ?, ?, ?, ?)',
-            [userResult.insertId, extension_number || null, ip_address || null, mac_address || null, phone_model || null]
+            [userResult.insertId, extension_number, ip_address, mac_address, phone_model]
         );
         res.status(201).json({ msg: 'User and extension added successfully.' });
     } catch (err) {
-        console.error(err.message);
+        console.error('Error adding user:', err.message);
         res.status(500).send('Server Error');
     }
 });
@@ -86,29 +141,60 @@ router.get('/users', async (req, res) => {
 
 // @route   PUT api/users/:id
 router.put('/users/:id', async (req, res) => {
-    const { name_surname, department, section, office_number, designation, station, extension_number, ip_address, mac_address, phone_model, role } = req.body;
+    let { name_surname, department, section, office_number, designation, station, extension_number, ip_address, mac_address, phone_model, role } = req.body;
     const userId = req.params.id;
+
     if (!name_surname) return res.status(400).json({ msg: 'Please provide name & surname.' });
+
+    // Sanitize empty strings to null
+    const toNull = (val) => (val === null || val === undefined || (typeof val === 'string' && val.trim() === '')) ? null : (typeof val === 'string' ? val.trim() : val);
+
+    ip_address = toNull(ip_address);
+    extension_number = toNull(extension_number);
+    department = toNull(department);
+    section = toNull(section);
+    office_number = toNull(office_number);
+    designation = toNull(designation);
+    station = toNull(station);
+    mac_address = toNull(mac_address);
+    phone_model = toNull(phone_model);
+
     try {
         if (ip_address) {
             const [existingIp] = await db.query('SELECT u.name_surname FROM extensions e JOIN users u ON e.user_id = u.id WHERE e.ip_address = ? AND u.id != ?', [ip_address, userId]);
-            if (existingIp.length > 0) return res.status(400).json({ msg: `IP Address ${ip_address} already assigned to ${existingIp[0].name_surname}.` });
+            if (existingIp.length > 0) {
+                console.warn(`[400] IP Duplicate: ${ip_address} taken by ${existingIp[0].name_surname}`);
+                return res.status(400).json({ msg: `IP Address ${ip_address} already assigned to ${existingIp[0].name_surname}.` });
+            }
         }
         if (extension_number) {
             const [existingExt] = await db.query('SELECT u.name_surname FROM extensions e JOIN users u ON e.user_id = u.id WHERE e.extension_number = ? AND u.id != ?', [extension_number, userId]);
-            if (existingExt.length > 0) return res.status(400).json({ msg: `Extension ${extension_number} already assigned to ${existingExt[0].name_surname}.` });
+            if (existingExt.length > 0) {
+                console.warn(`[400] Extension Duplicate: ${extension_number} taken by ${existingExt[0].name_surname}`);
+                return res.status(400).json({ msg: `Extension ${extension_number} already assigned to ${existingExt[0].name_surname}.` });
+            }
         }
         await db.query(
             'UPDATE users SET name_surname = ?, department = ?, section = ?, office_number = ?, designation = ?, station = ?, role = ? WHERE id = ?',
-            [name_surname, department || null, section || null, office_number || null, designation || null, station || null, role || 'user', userId]
+            [name_surname, department, section, office_number, designation, station, role || 'user', userId]
         );
-        await db.query(
+        const [extResult] = await db.query(
             'UPDATE extensions SET extension_number = ?, ip_address = ?, mac_address = ?, phone_model = ? WHERE user_id = ?',
-            [extension_number || null, ip_address || null, mac_address || null, phone_model || null, userId]
+            [extension_number, ip_address, mac_address, phone_model, userId]
         );
+        if (extResult.affectedRows === 0) {
+            // If no row updated, it might be missing (common with imports). Check and insert if needed.
+            const [existing] = await db.query('SELECT id FROM extensions WHERE user_id = ?', [userId]);
+            if (existing.length === 0) {
+                await db.query(
+                    'INSERT INTO extensions (user_id, extension_number, ip_address, mac_address, phone_model) VALUES (?, ?, ?, ?, ?)',
+                    [userId, extension_number, ip_address, mac_address, phone_model]
+                );
+            }
+        }
         res.json({ msg: 'User updated successfully.' });
     } catch (err) {
-        console.error(err.message);
+        console.error('Error updating user:', err.message);
         res.status(500).send('Server Error');
     }
 });
@@ -122,6 +208,27 @@ router.delete('/users/:id', async (req, res) => {
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
+    }
+});
+
+// @route   POST api/users/bulk-delete
+router.post('/users/bulk-delete', async (req, res) => {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ msg: 'Please provide user IDs for deletion.' });
+    }
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+        await connection.query('DELETE FROM users WHERE id IN (?)', [ids]);
+        await connection.commit();
+        res.json({ msg: `${ids.length} users deleted successfully.` });
+    } catch (err) {
+        await connection.rollback();
+        console.error('Bulk delete error:', err.message);
+        res.status(500).send('Server Error');
+    } finally {
+        connection.release();
     }
 });
 

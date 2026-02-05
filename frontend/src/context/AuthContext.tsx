@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { socketService } from '../services/socketService';
 
 interface AuthContextType {
     isAuthenticated: boolean;
@@ -19,7 +20,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const savedUser = sessionStorage.getItem('sentinel_user');
         if (savedUser) {
             try {
-                setUser(JSON.parse(savedUser));
+                const userData = JSON.parse(savedUser);
+                setUser(userData);
+                // Connect Socket.io on page load if user is authenticated
+                socketService.connect(userData.username, userData.department, userData.role);
             } catch (e) {
                 sessionStorage.removeItem('sentinel_user');
             }
@@ -30,11 +34,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const login = (userData: any) => {
         setUser(userData);
         sessionStorage.setItem('sentinel_user', JSON.stringify(userData));
+        // Connect Socket.io on login
+        socketService.connect(userData.username, userData.department, userData.role);
     };
 
     const logout = () => {
         setUser(null);
         sessionStorage.removeItem('sentinel_user');
+        // Disconnect Socket.io on logout
+        socketService.disconnect();
     };
 
     return (

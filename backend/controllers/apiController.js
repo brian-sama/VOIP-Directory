@@ -50,22 +50,53 @@ exports.deleteMetadata = async (req, res) => {
     }
 };
 
-// --- IMPORT LOGIC ---
-
-// Import Users from Excel/CSV
+// Import Users from Excel/CSV - OPTIMIZED FOR 1000+ USERS
 exports.importUsers = async (req, res) => {
     if (!req.file) return res.status(400).json({ msg: 'No file uploaded' });
+
+    const BATCH_SIZE = 100; // Process 100 rows at a time
     const connection = await db.getConnection();
+
     try {
         await connection.beginTransaction();
         const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
         const data = xlsx.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
 
+        console.log(`[IMPORT] Starting bulk import of ${data.length} rows...`);
+
         let importedCount = 0, skippedCount = 0, errors = [];
+
+        // Pre-fetch existing data for duplicate checking
         const [extRows] = await connection.query('SELECT extension_number FROM extensions');
         const existingExts = new Set(extRows.map(e => String(e.extension_number).trim()));
         const [userRows] = await connection.query('SELECT name_surname FROM users');
         const existingUsers = new Set(userRows.map(u => u.name_surname.trim().toLowerCase()));
+
+        // Step 1: Pre-collect all unique departments and sections
+        const allDepts = new Set();
+        const allSections = new Set();
+
+        for (const row of data) {
+            const dept = row['Department'] || row['department'] || 'General';
+            const sect = row['Section'] || row['section'] || 'General';
+            allDepts.add(dept);
+            allSections.add(sect);
+        }
+
+        // Bulk insert departments and sections
+        if (allDepts.size > 0) {
+            const deptValues = Array.from(allDepts).map(d => [d]);
+            await connection.query('INSERT IGNORE INTO departments (name) VALUES ?', [deptValues]);
+        }
+        if (allSections.size > 0) {
+            const sectValues = Array.from(allSections).map(s => [s]);
+            await connection.query('INSERT IGNORE INTO sections (name) VALUES ?', [sectValues]);
+        }
+
+        console.log(`[IMPORT] Pre-inserted ${allDepts.size} departments and ${allSections.size} sections`);
+
+        // Step 2: Parse and validate all rows first
+        const validUsers = [];
 
         for (const row of data) {
             let name = row['Name Surname'] || row['name_surname'] || row['Full Name'] || row['full_name'] || row['Employee Name'] || row['User'] || row['UserName'];
@@ -77,36 +108,84 @@ exports.importUsers = async (req, res) => {
             if (name) name = name.trim();
             const ext = String(row['Extension'] || row['Extension Number'] || row['ext'] || '').trim();
 
+            // Skip duplicates
             if (!name || (ext && existingExts.has(ext)) || existingUsers.has(name.toLowerCase())) {
                 if (name) skippedCount++;
                 continue;
             }
 
-            try {
-                const dept = row['Department'] || row['department'] || 'General';
-                const sect = row['Section'] || row['section'] || 'General';
-                await connection.query('INSERT IGNORE INTO departments (name) VALUES (?)', [dept]);
-                await connection.query('INSERT IGNORE INTO sections (name) VALUES (?)', [sect]);
+            // Mark as used to prevent duplicates within the same file
+            existingUsers.add(name.toLowerCase());
+            if (ext) existingExts.add(ext);
 
-                const [ur] = await connection.query(
-                    'INSERT INTO users (name_surname, username, password, department, section, office_number, designation, station, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                    [name, name, ext || '123456', dept, sect, row['Office Number'] || '', row['Designation'] || '', row['Station'] || '', 'user']
+            validUsers.push({
+                name,
+                ext,
+                dept: row['Department'] || row['department'] || 'General',
+                sect: row['Section'] || row['section'] || 'General',
+                office: row['Office Number'] || row['office_number'] || '',
+                designation: row['Designation'] || row['designation'] || '',
+                station: row['Station'] || row['station'] || '',
+                ip: (row['IP Address'] || row['ip_address'] || '').trim(),
+                mac: (row['Mac Address'] || row['mac_address'] || '').trim(),
+                phone: (row['Phone Model'] || row['phone_model'] || '').trim()
+            });
+        }
+
+        console.log(`[IMPORT] Validated ${validUsers.length} users for import, skipping ${skippedCount} duplicates`);
+
+        // Step 3: Batch insert users and extensions
+        for (let i = 0; i < validUsers.length; i += BATCH_SIZE) {
+            const batch = validUsers.slice(i, i + BATCH_SIZE);
+
+            try {
+                // Batch insert users with normalized usernames
+                const normalizeUsername = (name) => name.toLowerCase().replace(/\s+/g, '');
+                const userValues = batch.map(u => [
+                    u.name, normalizeUsername(u.name), u.ext || '123456', u.dept, u.sect, u.office, u.designation, u.station, 'user'
+                ]);
+
+                const [userResult] = await connection.query(
+                    'INSERT INTO users (name_surname, username, password, department, section, office_number, designation, station, role) VALUES ?',
+                    [userValues]
                 );
-                if (ext) {
-                    await connection.query('INSERT INTO extensions (user_id, extension_number, ip_address, mac_address, phone_model) VALUES (?, ?, ?, ?, ?)',
-                        [ur.insertId, ext, (row['IP Address'] || '').trim(), (row['Mac Address'] || '').trim(), (row['Phone Model'] || '').trim()]);
-                    existingExts.add(ext);
+
+                const firstInsertId = userResult.insertId;
+
+                // Batch insert extensions (only for users with extensions)
+                const extValues = [];
+                batch.forEach((u, idx) => {
+                    const userId = firstInsertId + idx;
+                    if (u.ext || u.ip || u.mac || u.phone) {
+                        extValues.push([userId, u.ext || null, u.ip || null, u.mac || null, u.phone || null]);
+                    }
+                });
+
+                if (extValues.length > 0) {
+                    await connection.query(
+                        'INSERT INTO extensions (user_id, extension_number, ip_address, mac_address, phone_model) VALUES ?',
+                        [extValues]
+                    );
                 }
-                existingUsers.add(name.toLowerCase());
-                importedCount++;
-            } catch (err) {
-                errors.push(`Error importing ${name}: ${err.message}`);
+
+                importedCount += batch.length;
+                console.log(`[IMPORT] Processed batch ${Math.floor(i / BATCH_SIZE) + 1}: ${importedCount}/${validUsers.length} users imported`);
+
+            } catch (batchErr) {
+                errors.push(`Batch ${Math.floor(i / BATCH_SIZE) + 1} error: ${batchErr.message}`);
+                console.error(`[IMPORT] Batch error:`, batchErr.message);
             }
         }
+
         await connection.commit();
+        console.log(`[IMPORT] Complete! Imported ${importedCount}, skipped ${skippedCount}`);
         res.json({ msg: `Imported ${importedCount}. Skipped ${skippedCount}.`, importedCount, skippedCount, errors });
+
     } catch (err) {
         await connection.rollback();
-        res.status(500).json({ msg: 'Server Error during import' });
-    } finally { connection.release(); }
+        console.error('[IMPORT] Fatal error:', err.message);
+        res.status(500).json({ msg: 'Server Error during import', error: err.message });
+    } finally {
+        connection.release();
+    }
 };

@@ -3,11 +3,13 @@
   "version": "1.0.0",
   "description": "VOIP Directory & Extension Monitoring System",
   "scripts": {
-    "start": "concurrently \"npm run backend\" \"npm run frontend\"",
-    "backend": "cd backend && npm start",
-    "frontend": "cd frontend && npm run dev -- --host",
-    "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install",
-    "dev": "npm start"
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "start:backend": "cd backend && npm start",
+    "start:frontend": "cd frontend && npm run preview",
+    "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install"
   },
   "keywords": [
     "voip",

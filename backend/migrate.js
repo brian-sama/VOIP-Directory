@@ -62,9 +62,15 @@ const runMigration = async () => {
         // 4. Schema Refinement (NULLs and lengths)
         console.log('Refining schema (NULLs and lengths)...');
         await connection.query("ALTER TABLE users MODIFY COLUMN office_number VARCHAR(100)");
+        await connection.query("ALTER TABLE extensions MODIFY extension_number VARCHAR(10) NULL");
         await connection.query("ALTER TABLE extensions MODIFY ip_address VARCHAR(45) NULL");
         await connection.query("ALTER TABLE extensions MODIFY mac_address VARCHAR(45) NULL");
         await connection.query("ALTER TABLE extensions MODIFY phone_model VARCHAR(50) NULL");
+
+        // Remove redundant unique key if it exists
+        try {
+            await connection.query("ALTER TABLE extensions DROP INDEX unique_extension_number");
+        } catch (e) { /* ignore if not exists */ }
 
         // 5. SIP Status Tracking
         console.log('Checking/Adding SIP status columns...');

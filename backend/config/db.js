@@ -7,8 +7,11 @@ const pool = mysql.createPool({
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'bcc_voip_directory',
   waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
+  connectionLimit: 200,
+  queueLimit: 0,
+  connectTimeout: 60000,
+  acquireTimeout: 60000,
+  timeout: 60000
 });
 
 module.exports = pool.promise();

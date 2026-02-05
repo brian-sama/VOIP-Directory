@@ -19,6 +19,10 @@ export const apiService = {
         const response = await axios.delete(`/users/${id}`);
         return response.data;
     },
+    bulkDeleteUsers: async (ids: number[]) => {
+        const response = await axios.post('/users/bulk-delete', { ids });
+        return response.data;
+    },
 
     // Activity Logs
     getLogs: async () => {
@@ -55,6 +59,30 @@ export const apiService = {
     // Auth
     login: async (credentials: any) => {
         const response = await axios.post('/auth/login', credentials);
+        return response.data;
+    },
+
+    // Import & Cleanup
+    importUsers: async (file: File) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        const response = await axios.post('/import/users', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        return response.data;
+    },
+    runCleanup: async () => {
+        const response = await axios.post('/users/cleanup');
+        return response.data;
+    },
+
+    // Metadata Management
+    addMetadata: async (type: string, name: string) => {
+        const response = await axios.post(`/metadata/${type}`, { name });
+        return response.data;
+    },
+    deleteMetadata: async (type: string, id: number) => {
+        const response = await axios.delete(`/metadata/${type}/${id}`);
         return response.data;
     }
 };
