@@ -1,0 +1,25 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Environment
+# .env is explicitly INCLUDED per user request
+# .env  <-- NOT IGNORED
+
+# CSV Data
+# BCC Consolidated VOIP data.csv is explicitly INCLUDED per user request
+# *.csv <-- NOT IGNORED globally, but we can ignore others if safe. 
+# For now, we only ignore typical build artifacts.
+
+# Misc
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo

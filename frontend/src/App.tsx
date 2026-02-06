@@ -256,16 +256,16 @@ const App: React.FC = () => {
 
   const handleBulkDelete = async () => {
     if (selectedIds.length === 0) return;
-    if (!confirm(`Permanently purge ${selectedIds.length} units from registry?`)) return;
+    if (!confirm(`Permanently delete ${selectedIds.length} users?`)) return;
 
     setIsLoading(true);
     try {
       await apiService.bulkDeleteUsers(selectedIds);
-      success(`${selectedIds.length} units purged.`);
+      success(`${selectedIds.length} users deleted.`);
       setSelectedIds([]);
       fetchData();
     } catch (e: any) {
-      toastError(e.response?.data?.msg || "Bulk purge failed.");
+      toastError(e.response?.data?.msg || "Delete failed.");
     } finally {
       setIsLoading(false);
     }
@@ -313,9 +313,9 @@ const App: React.FC = () => {
     if (!confirm(`Purge this ${type} entity?`)) return;
     try {
       await apiService.deleteMetadata(type, id);
-      success("Entity purged.");
+      success("Deleted.");
       fetchData();
-    } catch (e) { toastError("Purge protocol failed."); }
+    } catch (e) { toastError("Delete failed."); }
   };
 
   const handleExportCSV = () => {
@@ -341,15 +341,15 @@ const App: React.FC = () => {
     try {
       if (editingUser.id !== 0) {
         await apiService.updateUser(editingUser.id, editingUser);
-        success("Profile metadata committed.");
+        success("User updated successfully.");
       } else {
         await apiService.addUser(editingUser);
-        success("Hardware registered.");
+        success("User added successfully.");
       }
       fetchData();
       setEditingUser(null);
     } catch (e: any) {
-      const msg = e.response?.data?.msg || "Configuration commit failed.";
+      const msg = e.response?.data?.msg || "Update failed.";
       toastError(msg);
     }
   };
@@ -485,7 +485,7 @@ const App: React.FC = () => {
                     <TableHeader k="department" label="Department" />
                     <th className="px-6 py-4">Office Number</th>
                     <TableHeader k="extension_number" label="Extension" />
-                    {isAdmin && <TableHeader k="ip_address" label="IP Interface" />}
+                    {isAdmin && <TableHeader k="ip_address" label="IP Address" />}
                     {isAdmin && <th className="px-6 py-4">Status</th>}
                   </tr>
                 </thead>
@@ -603,10 +603,10 @@ const App: React.FC = () => {
                           )}
                         </div>
                       </th>
-                      <th className="px-8 py-5">Entity</th>
+                      <th className="px-8 py-5">Employee Name</th>
                       <th className="px-8 py-5">Extension</th>
-                      <th className="px-8 py-5">IP Lease</th>
-                      <th className="px-8 py-5">Hardware Profile</th>
+                      <th className="px-8 py-5">IP Address</th>
+                      <th className="px-8 py-5">Device Details</th>
                       <th className="px-8 py-5 text-right">Operations</th>
                     </tr>
                   </thead>
@@ -635,7 +635,7 @@ const App: React.FC = () => {
                         <td className="px-8 py-6 text-right">
                           <div className="inline-flex gap-2">
                             <button onClick={() => setEditingUser(ensureNoNulls(u))} title="Edit Configuration" className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all"><Edit2 className="w-4 h-4" /></button>
-                            <button onClick={async () => { if (confirm('Permanently purge this unit from registry?')) { await apiService.deleteUser(u.id); fetchData(); } }} title="Purge Unit" className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all"><Trash2 className="w-4 h-4" /></button>
+                            <button onClick={async () => { if (confirm('Permanently delete this user?')) { await apiService.deleteUser(u.id); fetchData(); } }} title="Purge Unit" className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all"><Trash2 className="w-4 h-4" /></button>
                           </div>
                         </td>
                       </tr>
@@ -807,7 +807,7 @@ const App: React.FC = () => {
           <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl overflow-hidden animate-zoom-in border border-slate-100">
             <div className="p-10 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
               <div>
-                <h3 className="text-2xl font-black text-slate-900 tracking-tighter uppercase">{editingUser.id !== 0 ? 'Edit User' : 'Register User'}</h3>
+                <h3 className="text-2xl font-black text-slate-900 tracking-tighter uppercase">{editingUser.id !== 0 ? 'Edit User' : 'Add New User'}</h3>
                 <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mt-1">User Database</p>
               </div>
               <button onClick={() => setEditingUser(null)} title="Close" aria-label="Close" className="h-12 w-12 flex items-center justify-center bg-white rounded-2xl border border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all"><XCircle className="w-8 h-8" /></button>
@@ -823,11 +823,11 @@ const App: React.FC = () => {
                   <input placeholder="8000" className="input-field font-black text-blue-600" value={editingUser.extension_number || ''} onChange={e => setEditingUser({ ...editingUser, extension_number: e.target.value })} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">IP Lease ID</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">IP Address</label>
                   <input placeholder="192.168.x.x" className="input-field font-mono" value={editingUser.ip_address || ''} onChange={e => setEditingUser({ ...editingUser, ip_address: e.target.value })} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Structural Unit</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Department</label>
                   <select title="Select Department" className="input-field" value={editingUser.department || ''} onChange={e => setEditingUser({ ...editingUser, department: e.target.value })}>
                     <option value="">None</option>
                     {depts.map((d: any) => <option key={d.id} value={d.name}>{d.name}</option>)}
@@ -847,8 +847,12 @@ const App: React.FC = () => {
                   <input placeholder="00:...:00" className="input-field font-mono text-xs uppercase" value={editingUser.mac_address || ''} onChange={e => setEditingUser({ ...editingUser, mac_address: e.target.value })} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Office Code</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Office Number</label>
                   <input placeholder="B22" className="input-field" value={editingUser.office_number || ''} onChange={e => setEditingUser({ ...editingUser, office_number: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Designation</label>
+                  <input placeholder="Designation" className="input-field" value={editingUser.designation || ''} onChange={e => setEditingUser({ ...editingUser, designation: e.target.value })} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Official Role</label>
@@ -860,7 +864,7 @@ const App: React.FC = () => {
               </div>
               <div className="flex gap-4 pt-6 border-t border-slate-100">
                 <button type="button" onClick={() => setEditingUser(null)} className="flex-1 py-5 bg-slate-50 text-slate-500 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-slate-100 transition-all">Abort</button>
-                <button type="submit" className="flex-[2] py-5 bg-slate-900 text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] hover:bg-blue-600 shadow-2xl shadow-blue-200 transition-all">Execute Registration</button>
+                <button type="submit" className="flex-[2] py-5 bg-slate-900 text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] hover:bg-blue-600 shadow-2xl shadow-blue-200 transition-all">Save User</button>
               </div>
             </form>
           </div>
