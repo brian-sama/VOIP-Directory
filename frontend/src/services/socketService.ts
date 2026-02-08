@@ -1,6 +1,7 @@
 import { io, Socket } from 'socket.io-client';
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || `http://${window.location.hostname}:5001`;
+const SOCKET_URL = (import.meta as any).env.VITE_SOCKET_URL ||
+    ((import.meta as any).env.MODE === 'production' ? `http://${window.location.hostname}` : `http://${window.location.hostname}:5001`);
 
 class SocketService {
     private socket: Socket | null = null;
@@ -36,7 +37,7 @@ class SocketService {
         // Re-attach all listeners
         this.listeners.forEach((callbacks, event) => {
             callbacks.forEach(callback => {
-                this.socket?.on(event, callback);
+                this.socket?.on(event, callback as any);
             });
         });
     }

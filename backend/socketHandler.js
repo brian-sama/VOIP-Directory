@@ -7,7 +7,18 @@ let io;
 function initializeSocket(httpServer) {
     io = new Server(httpServer, {
         cors: {
-            origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+            origin: (origin, callback) => {
+                if (process.env.NODE_ENV !== 'production') {
+                    callback(null, true);
+                } else {
+                    const allowedOrigins = [process.env.FRONTEND_URL, 'http://localhost:5173'];
+                    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+                        callback(null, true);
+                    } else {
+                        callback(new Error('Not allowed by CORS'));
+                    }
+                }
+            },
             credentials: true
         },
         // Tuning for 1000 concurrent users
