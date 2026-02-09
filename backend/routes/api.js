@@ -4,6 +4,7 @@ const db = require('../config/db');
 const multer = require('multer');
 const { runDirectoryCleanup } = require('../services');
 const apiController = require('../controllers/apiController');
+const { generateUsername } = require('../utils/userUtils');
 const PDFDocument = require('pdfkit');
 const xlsx = require('xlsx');
 
@@ -19,8 +20,8 @@ router.post('/auth/login', async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) return res.status(400).json({ msg: 'Please enter all fields' });
     try {
-        // Normalize username for comparison: lowercase and remove spaces
-        const normalizedUsername = username.toLowerCase().replace(/\s+/g, '');
+        // Normalize input for comparison: handle first initial + surname + punctuation
+        const normalizedInput = generateUsername(username);
 
         const [adminRows] = await db.query('SELECT * FROM admins WHERE username = ?', [username]);
         if (adminRows.length > 0 && password === adminRows[0].password) {
@@ -41,9 +42,9 @@ router.post('/auth/login', async (req, res) => {
         // Query all users and check with normalized comparison
         const [userRows] = await db.query('SELECT * FROM users');
         const matchedUser = userRows.find(user => {
-            const normalizedNameSurname = (user.name_surname || '').toLowerCase().replace(/\s+/g, '');
-            const normalizedUserUsername = (user.username || '').toLowerCase().replace(/\s+/g, '');
-            return normalizedNameSurname === normalizedUsername || normalizedUserUsername === normalizedUsername;
+            const storedUsername = (user.username || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+            const normalizedDbName = generateUsername(user.name_surname || '');
+            return storedUsername === normalizedInput || normalizedDbName === normalizedInput;
         });
 
         if (matchedUser && password === matchedUser.password) {
@@ -79,9 +80,8 @@ router.post('/users', async (req, res) => {
 
     if (!name_surname) return res.status(400).json({ msg: 'Please provide name & surname.' });
 
-    // Normalize username: lowercase and remove spaces
-    const normalizeUsername = (name) => name.toLowerCase().replace(/\s+/g, '');
-    const username = normalizeUsername(name_surname);
+    // Automatically generate username: first initial + surname
+    const username = generateUsername(name_surname);
 
     // Sanitize empty strings to null
     const toNull = (val) => (val && val.trim() !== '') ? val.trim() : null;
@@ -160,6 +160,9 @@ router.put('/users/:id', async (req, res) => {
     phone_model = toNull(phone_model);
 
     try {
+        // Automatically update username when name changes for automation
+        const username = generateUsername(name_surname);
+
         if (ip_address) {
             const [existingIp] = await db.query('SELECT u.name_surname FROM extensions e JOIN users u ON e.user_id = u.id WHERE e.ip_address = ? AND u.id != ?', [ip_address, userId]);
             if (existingIp.length > 0) {
@@ -175,8 +178,8 @@ router.put('/users/:id', async (req, res) => {
             }
         }
         await db.query(
-            'UPDATE users SET name_surname = ?, department = ?, section = ?, office_number = ?, designation = ?, station = ?, role = ? WHERE id = ?',
-            [name_surname, department, section, office_number, designation, station, role || 'user', userId]
+            'UPDATE users SET name_surname = ?, username = ?, department = ?, section = ?, office_number = ?, designation = ?, station = ?, role = ? WHERE id = ?',
+            [name_surname, username, department, section, office_number, designation, station, role || 'user', userId]
         );
         const [extResult] = await db.query(
             'UPDATE extensions SET extension_number = ?, ip_address = ?, mac_address = ?, phone_model = ? WHERE user_id = ?',

@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const xlsx = require('xlsx');
+const { generateUsername } = require('../utils/userUtils');
 
 // --- METADATA LOGIC ---
 
@@ -139,10 +140,9 @@ exports.importUsers = async (req, res) => {
             const batch = validUsers.slice(i, i + BATCH_SIZE);
 
             try {
-                // Batch insert users with normalized usernames
-                const normalizeUsername = (name) => name.toLowerCase().replace(/\s+/g, '');
+                // Batch insert users with automated usernames (first initial + surname)
                 const userValues = batch.map(u => [
-                    u.name, normalizeUsername(u.name), u.ext || '123456', u.dept, u.sect, u.office, u.designation, u.station, 'user'
+                    u.name, generateUsername(u.name), u.ext || '123456', u.dept, u.sect, u.office, u.designation, u.station, 'user'
                 ]);
 
                 const [userResult] = await connection.query(
