@@ -79,22 +79,55 @@ async function checkExtensions() {
     try {
         const [exts] = await connection.query('SELECT id, ip_address, extension_number FROM extensions');
         if (exts.length === 0) return;
+
+        // 1. Get Yeastar Statuses (Primary Source of Truth for SIP)
         const yStatuses = await yeastar.getAllStatuses();
+
         for (const e of exts) {
-            const pRes = await ping.promise.probe(e.ip_address, { timeout: 3 });
-            let sipPortOpen = null, sipStatus = 'Unknown';
-            if (pRes.alive) {
-                sipPortOpen = await new Promise(r => {
-                    const s = new net.Socket(); s.setTimeout(2000);
-                    s.on('connect', () => { s.destroy(); r(true); }).on('timeout', () => { s.destroy(); r(false); }).on('error', () => { s.destroy(); r(false); }).connect(SIP_PORT, e.ip_address);
-                });
-                if (yStatuses.has(String(e.extension_number))) sipStatus = yStatuses.get(String(e.extension_number)).sipStatus;
-                else sipStatus = sipPortOpen ? 'Registered' : 'Unregistered';
+            const extNum = String(e.extension_number);
+            let sipStatus = 'Unknown';
+            let sipPortOpen = null;
+            let isPingAlive = false;
+
+            // 2. Check Ping (Secondary Source for Network Reachability)
+            if (e.ip_address) {
+                const pRes = await ping.promise.probe(e.ip_address, { timeout: 3 });
+                isPingAlive = pRes.alive;
             }
+
+            // 3. Determine SIP Status
+            if (yStatuses.has(extNum)) {
+                // Trust Yeastar if available
+                sipStatus = yStatuses.get(extNum).sipStatus;
+            } else if (isPingAlive) {
+                // Fallback: If alive but not in Yeastar list (or Yeastar down), check port 5060
+                sipPortOpen = await new Promise(r => {
+                    const s = new net.Socket();
+                    s.setTimeout(2000);
+                    s.on('connect', () => { s.destroy(); r(true); })
+                        .on('timeout', () => { s.destroy(); r(false); })
+                        .on('error', () => { s.destroy(); r(false); })
+                        .connect(SIP_PORT, e.ip_address);
+                });
+                sipStatus = sipPortOpen ? 'Registered' : 'Unregistered';
+            } else {
+                // If not in Yeastar and Ping failed, we can't determine much, assume Unregistered/Unknown
+                sipStatus = 'Unregistered';
+            }
+
+            // 4. Determine Global Status (Online if Registered OR Pingable)
+            // A device might block ping but be registered (Online)
+            // A device might be pingable but not registered (Online but improperly configured?)
+            const status = (sipStatus === 'Registered' || isPingAlive) ? 'Online' : 'Offline';
+
             const now = new Date();
-            await connection.query('UPDATE extensions SET status = ?, last_seen = ?, sip_port_open = ?, sip_status = ?, sip_last_checked = ? WHERE id = ?',
-                [pRes.alive ? 'Online' : 'Offline', pRes.alive ? now : null, sipPortOpen, sipStatus, now, e.id]);
-            await connection.query('INSERT INTO ping_logs (extension_id, ping_time, result) VALUES (?, ?, ?)', [e.id, now, pRes.alive ? 'Success' : 'Failed']);
+            await connection.query(
+                'UPDATE extensions SET status = ?, last_seen = ?, sip_port_open = ?, sip_status = ?, sip_last_checked = ? WHERE id = ?',
+                [status, (status === 'Online' ? now : null), sipPortOpen, sipStatus, now, e.id]
+            );
+
+            // Log ping result separately for debugging
+            await connection.query('INSERT INTO ping_logs (extension_id, ping_time, result) VALUES (?, ?, ?)', [e.id, now, isPingAlive ? 'Success' : 'Failed']);
         }
     } catch (err) {
         console.error('[Monitoring] Error:', err.message);

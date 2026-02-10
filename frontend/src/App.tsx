@@ -46,6 +46,9 @@ const App: React.FC = () => {
   const { isAuthenticated, logout, isLoading: authLoading, user: authUser } = useAuth();
   const { success, error: toastError } = useToast();
   const [activeView, setActiveView] = useState<View>('DIRECTORY');
+  
+  const stripPunctuation = (str: string) => str.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+
   const [users, setUsers] = useState<any[]>([]);
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [isMonitoring, setIsMonitoring] = useState(false);
@@ -184,17 +187,17 @@ const App: React.FC = () => {
 
     // Search
     if (searchQuery) {
-      const lowerQuery = searchQuery.toLowerCase();
+      const strippedQuery = stripPunctuation(searchQuery);
       result = result.filter((u: any) =>
-        u.name_surname?.toLowerCase().includes(lowerQuery) ||
-        u.extension_number?.includes(searchQuery) ||
-        u.ip_address?.includes(searchQuery) ||
-        u.department?.toLowerCase().includes(lowerQuery) ||
-        u.section?.toLowerCase().includes(lowerQuery) ||
-        u.station?.toLowerCase().includes(lowerQuery) ||
-        u.mac_address?.toLowerCase().includes(lowerQuery) ||
-        u.phone_model?.toLowerCase().includes(lowerQuery) ||
-        u.office_number?.toLowerCase().includes(lowerQuery)
+        stripPunctuation(u.name_surname || '').includes(strippedQuery) ||
+        stripPunctuation(u.extension_number || '').includes(strippedQuery) ||
+        stripPunctuation(u.ip_address || '').includes(strippedQuery) ||
+        stripPunctuation(u.department || '').includes(strippedQuery) ||
+        stripPunctuation(u.section || '').includes(strippedQuery) ||
+        stripPunctuation(u.station || '').includes(strippedQuery) ||
+        stripPunctuation(u.mac_address || '').includes(strippedQuery) ||
+        stripPunctuation(u.phone_model || '').includes(strippedQuery) ||
+        stripPunctuation(u.office_number || '').includes(strippedQuery)
       );
     }
 
@@ -245,10 +248,11 @@ const App: React.FC = () => {
   const processedAdminUsers = useMemo(() => {
     let result = [...users];
     if (adminSearchQuery) {
+      const strippedAdminQuery = stripPunctuation(adminSearchQuery);
       result = result.filter((u: any) =>
-        u.name_surname?.toLowerCase().includes(adminSearchQuery.toLowerCase()) ||
-        u.extension_number?.includes(adminSearchQuery) ||
-        u.ip_address?.includes(adminSearchQuery)
+        stripPunctuation(u.name_surname || '').includes(strippedAdminQuery) ||
+        stripPunctuation(u.extension_number || '').includes(strippedAdminQuery) ||
+        stripPunctuation(u.ip_address || '').includes(strippedAdminQuery)
       );
     }
     return result;
