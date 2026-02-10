@@ -21,7 +21,9 @@ CREATE TABLE IF NOT EXISTS users (
   designation VARCHAR(100),
   station VARCHAR(100),
   role ENUM('admin', 'user') DEFAULT 'user',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_users_username (username),
+  INDEX idx_users_name_surname (name_surname)
 );
 -- Extensions Table
 CREATE TABLE IF NOT EXISTS extensions (
@@ -36,7 +38,10 @@ CREATE TABLE IF NOT EXISTS extensions (
   sip_port_open TINYINT(1) DEFAULT NULL,
   sip_last_checked DATETIME DEFAULT NULL,
   last_seen DATETIME,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX idx_extensions_extension_number (extension_number),
+  INDEX idx_extensions_ip_address (ip_address),
+  INDEX idx_extensions_user_id (user_id)
 );
 -- Departments Table
 CREATE TABLE IF NOT EXISTS departments (

@@ -39,8 +39,12 @@ router.post('/auth/login', async (req, res) => {
             return res.json({ msg: 'Login successful', role: 'admin', user, token });
         }
 
-        // Query all users and check with normalized comparison
-        const [userRows] = await db.query('SELECT * FROM users');
+        // Query only relevant users
+        const [userRows] = await db.query(
+            'SELECT * FROM users WHERE username = ? OR name_surname = ? OR username = ?',
+            [username, username, normalizedInput]
+        );
+
         const matchedUser = userRows.find(user => {
             const storedUsername = (user.username || '').toLowerCase().replace(/[^a-z0-9]/g, '');
             const normalizedDbName = generateUsername(user.name_surname || '');
