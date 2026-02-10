@@ -109,15 +109,22 @@ exports.importUsers = async (req, res) => {
             if (name) name = name.trim();
             const ext = String(row['Extension'] || row['Extension Number'] || row['ext'] || '').trim();
 
-            // Skip duplicates
-            if (!name || (ext && existingExts.has(ext)) || existingUsers.has(name.toLowerCase())) {
+            // --- REFINED SKIP LOGIC (Extension as Primary Key) ---
+            if (ext) {
+                // If extension exists, it must be unique
+                if (existingExts.has(ext)) {
+                    skippedCount++;
+                    continue;
+                }
+            } else if (!name || existingUsers.has(name.toLowerCase())) {
+                // If no extension, name must be unique and not empty
                 if (name) skippedCount++;
                 continue;
             }
 
             // Mark as used to prevent duplicates within the same file
-            existingUsers.add(name.toLowerCase());
             if (ext) existingExts.add(ext);
+            if (name) existingUsers.add(name.toLowerCase());
 
             validUsers.push({
                 name,

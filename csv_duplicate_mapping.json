@@ -1,0 +1,328 @@
+{
+  "duplicateGroups": [
+    {
+      "ext": "3008",
+      "names": [
+        {
+          "line": 8,
+          "name": "MR  N.P THWALA"
+        },
+        {
+          "line": 36,
+          "name": "S BANDA"
+        }
+      ]
+    },
+    {
+      "ext": "5202",
+      "names": [
+        {
+          "line": 156,
+          "name": "BURSER"
+        },
+        {
+          "line": 174,
+          "name": "BURSER"
+        }
+      ]
+    },
+    {
+      "ext": "5206",
+      "names": [
+        {
+          "line": 159,
+          "name": "BURSER"
+        },
+        {
+          "line": 172,
+          "name": "BURSER"
+        }
+      ]
+    },
+    {
+      "ext": "5207",
+      "names": [
+        {
+          "line": 160,
+          "name": "BURSER"
+        },
+        {
+          "line": 166,
+          "name": "BURSER"
+        }
+      ]
+    },
+    {
+      "ext": "1190",
+      "names": [
+        {
+          "line": 187,
+          "name": "Khumalo"
+        },
+        {
+          "line": 196,
+          "name": "T Dube"
+        }
+      ]
+    },
+    {
+      "ext": "1226",
+      "names": [
+        {
+          "line": 243,
+          "name": "T.NHLOPE"
+        },
+        {
+          "line": 244,
+          "name": "M.GUMBO"
+        }
+      ]
+    },
+    {
+      "ext": "1264",
+      "names": [
+        {
+          "line": 256,
+          "name": "SWITCHBOARD"
+        },
+        {
+          "line": 264,
+          "name": "L.Ndlovu"
+        }
+      ]
+    },
+    {
+      "ext": "7021",
+      "names": [
+        {
+          "line": 280,
+          "name": "G.NCUBE"
+        },
+        {
+          "line": 289,
+          "name": "M.MPOFU"
+        }
+      ]
+    },
+    {
+      "ext": "7612",
+      "names": [
+        {
+          "line": 318,
+          "name": "E.MAKUMBIROFA"
+        },
+        {
+          "line": 322,
+          "name": "SIZALOBUHLE SITHOLE"
+        },
+        {
+          "line": 335,
+          "name": "NQOBANI SIBANDA"
+        }
+      ]
+    },
+    {
+      "ext": "7603",
+      "names": [
+        {
+          "line": 326,
+          "name": "LINDIWE NCUBE"
+        },
+        {
+          "line": 329,
+          "name": "EDGAR KHUMALO"
+        }
+      ]
+    },
+    {
+      "ext": "7119",
+      "names": [
+        {
+          "line": 347,
+          "name": "NULL"
+        },
+        {
+          "line": 362,
+          "name": "NULL"
+        }
+      ]
+    },
+    {
+      "ext": "7117",
+      "names": [
+        {
+          "line": 354,
+          "name": "CONSUMERS ENQUIRY"
+        },
+        {
+          "line": 357,
+          "name": "KHUPHE"
+        }
+      ]
+    },
+    {
+      "ext": "7205",
+      "names": [
+        {
+          "line": 385,
+          "name": "C MBANO"
+        },
+        {
+          "line": 386,
+          "name": "L.PIRI / mutamaba"
+        }
+      ]
+    },
+    {
+      "ext": "7239",
+      "names": [
+        {
+          "line": 402,
+          "name": "NULL"
+        },
+        {
+          "line": 410,
+          "name": "NULL"
+        }
+      ]
+    },
+    {
+      "ext": "4037",
+      "names": [
+        {
+          "line": 436,
+          "name": "M Sibanda"
+        },
+        {
+          "line": 452,
+          "name": "M.SIBANDA"
+        }
+      ]
+    },
+    {
+      "ext": "9017",
+      "names": [
+        {
+          "line": 442,
+          "name": "NULL"
+        },
+        {
+          "line": 541,
+          "name": "Bhekumuzi Dhlodhlo"
+        }
+      ]
+    },
+    {
+      "ext": "4033",
+      "names": [
+        {
+          "line": 445,
+          "name": "NULL"
+        },
+        {
+          "line": 448,
+          "name": "P.MATEZA"
+        }
+      ]
+    },
+    {
+      "ext": "4032",
+      "names": [
+        {
+          "line": 446,
+          "name": "NULL"
+        },
+        {
+          "line": 447,
+          "name": "NULL"
+        }
+      ]
+    },
+    {
+      "ext": "6005",
+      "names": [
+        {
+          "line": 512,
+          "name": "NTOKOZO NCUBE"
+        },
+        {
+          "line": 513,
+          "name": "Duduzile Dube"
+        }
+      ]
+    },
+    {
+      "ext": "8012",
+      "names": [
+        {
+          "line": 557,
+          "name": "B.NDLOVU"
+        },
+        {
+          "line": 581,
+          "name": "B.NDLOVU"
+        },
+        {
+          "line": 596,
+          "name": "M.NDLOVU"
+        }
+      ]
+    },
+    {
+      "ext": "8037",
+      "names": [
+        {
+          "line": 575,
+          "name": "L.DUBE"
+        },
+        {
+          "line": 588,
+          "name": ""
+        }
+      ]
+    },
+    {
+      "ext": "8016",
+      "names": [
+        {
+          "line": 582,
+          "name": "A.NCUBE"
+        },
+        {
+          "line": 592,
+          "name": "V.NCUBE"
+        }
+      ]
+    }
+  ],
+  "emptyExts": [
+    {
+      "line": 224,
+      "name": "O V Ndiweni"
+    },
+    {
+      "line": 225,
+      "name": "R.NDLOVU"
+    },
+    {
+      "line": 234,
+      "name": "PRINTING"
+    },
+    {
+      "line": 235,
+      "name": "H.NDIWENI"
+    },
+    {
+      "line": 236,
+      "name": "S.NDLOVU"
+    },
+    {
+      "line": 254,
+      "name": "EMERGENCY"
+    },
+    {
+      "line": 258,
+      "name": ""
+    }
+  ]
+}

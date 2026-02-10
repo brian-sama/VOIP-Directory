@@ -1,0 +1,1656 @@
+{
+  "duplicateExts": [
+    {
+      "ext": "3008",
+      "entries": [
+        {
+          "line": 8,
+          "name": "MR  N.P THWALA"
+        },
+        {
+          "line": 36,
+          "name": "S BANDA"
+        }
+      ]
+    },
+    {
+      "ext": "5202",
+      "entries": [
+        {
+          "line": 156,
+          "name": "BURSER"
+        },
+        {
+          "line": 174,
+          "name": "BURSER"
+        }
+      ]
+    },
+    {
+      "ext": "5206",
+      "entries": [
+        {
+          "line": 159,
+          "name": "BURSER"
+        },
+        {
+          "line": 172,
+          "name": "BURSER"
+        }
+      ]
+    },
+    {
+      "ext": "5207",
+      "entries": [
+        {
+          "line": 160,
+          "name": "BURSER"
+        },
+        {
+          "line": 166,
+          "name": "BURSER"
+        }
+      ]
+    },
+    {
+      "ext": "1190",
+      "entries": [
+        {
+          "line": 187,
+          "name": "Khumalo"
+        },
+        {
+          "line": 196,
+          "name": "T Dube"
+        }
+      ]
+    },
+    {
+      "ext": "1226",
+      "entries": [
+        {
+          "line": 243,
+          "name": "T.NHLOPE"
+        },
+        {
+          "line": 244,
+          "name": "M.GUMBO"
+        }
+      ]
+    },
+    {
+      "ext": "1264",
+      "entries": [
+        {
+          "line": 256,
+          "name": "SWITCHBOARD"
+        },
+        {
+          "line": 264,
+          "name": "L.Ndlovu"
+        }
+      ]
+    },
+    {
+      "ext": "7021",
+      "entries": [
+        {
+          "line": 280,
+          "name": "G.NCUBE"
+        },
+        {
+          "line": 289,
+          "name": "M.MPOFU"
+        }
+      ]
+    },
+    {
+      "ext": "7612",
+      "entries": [
+        {
+          "line": 318,
+          "name": "E.MAKUMBIROFA"
+        },
+        {
+          "line": 322,
+          "name": "SIZALOBUHLE SITHOLE"
+        },
+        {
+          "line": 335,
+          "name": "NQOBANI SIBANDA"
+        }
+      ]
+    },
+    {
+      "ext": "7603",
+      "entries": [
+        {
+          "line": 326,
+          "name": "LINDIWE NCUBE"
+        },
+        {
+          "line": 329,
+          "name": "EDGAR KHUMALO"
+        }
+      ]
+    },
+    {
+      "ext": "7119",
+      "entries": [
+        {
+          "line": 347,
+          "name": "NULL"
+        },
+        {
+          "line": 362,
+          "name": "NULL"
+        }
+      ]
+    },
+    {
+      "ext": "7117",
+      "entries": [
+        {
+          "line": 354,
+          "name": "CONSUMERS ENQUIRY"
+        },
+        {
+          "line": 357,
+          "name": "KHUPHE"
+        }
+      ]
+    },
+    {
+      "ext": "7205",
+      "entries": [
+        {
+          "line": 385,
+          "name": "C MBANO"
+        },
+        {
+          "line": 386,
+          "name": "L.PIRI / mutamaba"
+        }
+      ]
+    },
+    {
+      "ext": "7239",
+      "entries": [
+        {
+          "line": 402,
+          "name": "NULL"
+        },
+        {
+          "line": 410,
+          "name": "NULL"
+        }
+      ]
+    },
+    {
+      "ext": "4037",
+      "entries": [
+        {
+          "line": 436,
+          "name": "M Sibanda"
+        },
+        {
+          "line": 452,
+          "name": "M.SIBANDA"
+        }
+      ]
+    },
+    {
+      "ext": "9017",
+      "entries": [
+        {
+          "line": 442,
+          "name": "NULL"
+        },
+        {
+          "line": 541,
+          "name": "Bhekumuzi Dhlodhlo"
+        }
+      ]
+    },
+    {
+      "ext": "4033",
+      "entries": [
+        {
+          "line": 445,
+          "name": "NULL"
+        },
+        {
+          "line": 448,
+          "name": "P.MATEZA"
+        }
+      ]
+    },
+    {
+      "ext": "4032",
+      "entries": [
+        {
+          "line": 446,
+          "name": "NULL"
+        },
+        {
+          "line": 447,
+          "name": "NULL"
+        }
+      ]
+    },
+    {
+      "ext": "6005",
+      "entries": [
+        {
+          "line": 512,
+          "name": "NTOKOZO NCUBE"
+        },
+        {
+          "line": 513,
+          "name": "Duduzile Dube"
+        }
+      ]
+    },
+    {
+      "ext": "8012",
+      "entries": [
+        {
+          "line": 557,
+          "name": "B.NDLOVU"
+        },
+        {
+          "line": 581,
+          "name": "B.NDLOVU"
+        },
+        {
+          "line": 596,
+          "name": "M.NDLOVU"
+        }
+      ]
+    },
+    {
+      "ext": "8037",
+      "entries": [
+        {
+          "line": 575,
+          "name": "L.DUBE"
+        },
+        {
+          "line": 588,
+          "name": ""
+        }
+      ]
+    },
+    {
+      "ext": "8016",
+      "entries": [
+        {
+          "line": 582,
+          "name": "A.NCUBE"
+        },
+        {
+          "line": 592,
+          "name": "V.NCUBE"
+        }
+      ]
+    }
+  ],
+  "duplicateNames": [
+    {
+      "name": "t dube",
+      "entries": [
+        {
+          "line": 17,
+          "ext": "2098"
+        },
+        {
+          "line": 196,
+          "ext": "1190"
+        }
+      ]
+    },
+    {
+      "name": "s.sibanda",
+      "entries": [
+        {
+          "line": 19,
+          "ext": "3122"
+        },
+        {
+          "line": 282,
+          "ext": "7024"
+        },
+        {
+          "line": 558,
+          "ext": "8000"
+        }
+      ]
+    },
+    {
+      "name": "n.dube",
+      "entries": [
+        {
+          "line": 24,
+          "ext": "3119"
+        },
+        {
+          "line": 299,
+          "ext": "7055"
+        },
+        {
+          "line": 574,
+          "ext": "8036"
+        }
+      ]
+    },
+    {
+      "name": "b.ngwenya",
+      "entries": [
+        {
+          "line": 26,
+          "ext": "3117"
+        },
+        {
+          "line": 42,
+          "ext": "3014"
+        }
+      ]
+    },
+    {
+      "name": "b.sibanda",
+      "entries": [
+        {
+          "line": 30,
+          "ext": "3111"
+        },
+        {
+          "line": 437,
+          "ext": "4206"
+        }
+      ]
+    },
+    {
+      "name": "s.mkandla",
+      "entries": [
+        {
+          "line": 33,
+          "ext": "3120"
+        },
+        {
+          "line": 560,
+          "ext": "8006"
+        }
+      ]
+    },
+    {
+      "name": "clensing",
+      "entries": [
+        {
+          "line": 34,
+          "ext": "3140"
+        },
+        {
+          "line": 35,
+          "ext": "2100"
+        }
+      ]
+    },
+    {
+      "name": "pharm tech",
+      "entries": [
+        {
+          "line": 43,
+          "ext": "3138"
+        },
+        {
+          "line": 44,
+          "ext": "3139"
+        }
+      ]
+    },
+    {
+      "name": "sister in charge",
+      "entries": [
+        {
+          "line": 45,
+          "ext": "3015"
+        },
+        {
+          "line": 48,
+          "ext": "3018"
+        },
+        {
+          "line": 50,
+          "ext": "3020"
+        },
+        {
+          "line": 52,
+          "ext": "3022"
+        },
+        {
+          "line": 54,
+          "ext": "3024"
+        },
+        {
+          "line": 56,
+          "ext": "3026"
+        },
+        {
+          "line": 58,
+          "ext": "3028"
+        },
+        {
+          "line": 60,
+          "ext": "3030"
+        },
+        {
+          "line": 62,
+          "ext": "3038"
+        },
+        {
+          "line": 64,
+          "ext": "3039"
+        },
+        {
+          "line": 66,
+          "ext": "3046"
+        },
+        {
+          "line": 68,
+          "ext": "3048"
+        },
+        {
+          "line": 70,
+          "ext": "3050"
+        },
+        {
+          "line": 72,
+          "ext": "3042"
+        },
+        {
+          "line": 74,
+          "ext": "3044"
+        },
+        {
+          "line": 76,
+          "ext": "3054"
+        },
+        {
+          "line": 78,
+          "ext": "3056"
+        },
+        {
+          "line": 80,
+          "ext": "3058"
+        },
+        {
+          "line": 82,
+          "ext": "3052"
+        },
+        {
+          "line": 84,
+          "ext": "3060"
+        }
+      ]
+    },
+    {
+      "name": "lab",
+      "entries": [
+        {
+          "line": 46,
+          "ext": "3016"
+        },
+        {
+          "line": 47,
+          "ext": "3017"
+        }
+      ]
+    },
+    {
+      "name": "community sister",
+      "entries": [
+        {
+          "line": 49,
+          "ext": "3019"
+        },
+        {
+          "line": 51,
+          "ext": "3021"
+        },
+        {
+          "line": 53,
+          "ext": "3023"
+        },
+        {
+          "line": 55,
+          "ext": "3025"
+        },
+        {
+          "line": 57,
+          "ext": "3027"
+        },
+        {
+          "line": 59,
+          "ext": "3029"
+        },
+        {
+          "line": 61,
+          "ext": "3037"
+        },
+        {
+          "line": 63,
+          "ext": "3040"
+        },
+        {
+          "line": 65,
+          "ext": "3041"
+        },
+        {
+          "line": 67,
+          "ext": "3047"
+        },
+        {
+          "line": 69,
+          "ext": "3049"
+        },
+        {
+          "line": 71,
+          "ext": "3051"
+        },
+        {
+          "line": 73,
+          "ext": "3043"
+        },
+        {
+          "line": 75,
+          "ext": "3045"
+        },
+        {
+          "line": 77,
+          "ext": "3055"
+        },
+        {
+          "line": 79,
+          "ext": "3057"
+        },
+        {
+          "line": 81,
+          "ext": "3059"
+        },
+        {
+          "line": 83,
+          "ext": "3053"
+        },
+        {
+          "line": 85,
+          "ext": "3061"
+        }
+      ]
+    },
+    {
+      "name": "s.dube",
+      "entries": [
+        {
+          "line": 86,
+          "ext": "5000"
+        },
+        {
+          "line": 126,
+          "ext": "5053"
+        },
+        {
+          "line": 470,
+          "ext": "8512"
+        },
+        {
+          "line": 480,
+          "ext": "8551"
+        },
+        {
+          "line": 483,
+          "ext": "8554"
+        }
+      ]
+    },
+    {
+      "name": "d.khumalo",
+      "entries": [
+        {
+          "line": 87,
+          "ext": "5001"
+        },
+        {
+          "line": 561,
+          "ext": "8040"
+        }
+      ]
+    },
+    {
+      "name": "m.ndlovu",
+      "entries": [
+        {
+          "line": 97,
+          "ext": "9008"
+        },
+        {
+          "line": 549,
+          "ext": "8009"
+        },
+        {
+          "line": 596,
+          "ext": "8012"
+        }
+      ]
+    },
+    {
+      "name": "j.sibanda",
+      "entries": [
+        {
+          "line": 100,
+          "ext": "5005"
+        },
+        {
+          "line": 488,
+          "ext": "8559"
+        }
+      ]
+    },
+    {
+      "name": "clerical asst",
+      "entries": [
+        {
+          "line": 103,
+          "ext": "5021"
+        },
+        {
+          "line": 104,
+          "ext": "5022"
+        },
+        {
+          "line": 105,
+          "ext": "5023"
+        },
+        {
+          "line": 106,
+          "ext": "900"
+        }
+      ]
+    },
+    {
+      "name": "m.mpofu",
+      "entries": [
+        {
+          "line": 109,
+          "ext": "5020"
+        },
+        {
+          "line": 289,
+          "ext": "7021"
+        }
+      ]
+    },
+    {
+      "name": "t.sithole",
+      "entries": [
+        {
+          "line": 110,
+          "ext": "5028"
+        },
+        {
+          "line": 228,
+          "ext": "1214"
+        }
+      ]
+    },
+    {
+      "name": "admin",
+      "entries": [
+        {
+          "line": 113,
+          "ext": "5024"
+        },
+        {
+          "line": 125,
+          "ext": "9004"
+        }
+      ]
+    },
+    {
+      "name": "\"j",
+      "entries": [
+        {
+          "line": 115,
+          "ext": "SANYA\""
+        },
+        {
+          "line": 119,
+          "ext": "MPOFU\""
+        }
+      ]
+    },
+    {
+      "name": "m.ncube",
+      "entries": [
+        {
+          "line": 117,
+          "ext": "5033"
+        },
+        {
+          "line": 568,
+          "ext": "8018"
+        }
+      ]
+    },
+    {
+      "name": "n.mpofu",
+      "entries": [
+        {
+          "line": 118,
+          "ext": "5036"
+        },
+        {
+          "line": 487,
+          "ext": "8558"
+        },
+        {
+          "line": 563,
+          "ext": "8031"
+        }
+      ]
+    },
+    {
+      "name": "housing officer",
+      "entries": [
+        {
+          "line": 131,
+          "ext": "5054"
+        },
+        {
+          "line": 132,
+          "ext": "90000"
+        },
+        {
+          "line": 133,
+          "ext": "5056"
+        },
+        {
+          "line": 134,
+          "ext": "5057"
+        },
+        {
+          "line": 135,
+          "ext": "5058"
+        },
+        {
+          "line": 136,
+          "ext": "5059"
+        },
+        {
+          "line": 137,
+          "ext": "5060"
+        },
+        {
+          "line": 138,
+          "ext": "5061"
+        },
+        {
+          "line": 139,
+          "ext": "5062"
+        },
+        {
+          "line": 140,
+          "ext": "5063"
+        },
+        {
+          "line": 141,
+          "ext": "5079"
+        },
+        {
+          "line": 142,
+          "ext": "5077"
+        },
+        {
+          "line": 143,
+          "ext": "5064"
+        },
+        {
+          "line": 144,
+          "ext": "5055"
+        },
+        {
+          "line": 145,
+          "ext": "5066"
+        },
+        {
+          "line": 146,
+          "ext": "5078"
+        },
+        {
+          "line": 147,
+          "ext": "5068"
+        },
+        {
+          "line": 148,
+          "ext": "5070"
+        },
+        {
+          "line": 149,
+          "ext": "5080"
+        },
+        {
+          "line": 150,
+          "ext": "5076"
+        },
+        {
+          "line": 151,
+          "ext": "9009"
+        },
+        {
+          "line": 152,
+          "ext": "9010"
+        }
+      ]
+    },
+    {
+      "name": "burser",
+      "entries": [
+        {
+          "line": 154,
+          "ext": "5200"
+        },
+        {
+          "line": 155,
+          "ext": "5201"
+        },
+        {
+          "line": 156,
+          "ext": "5202"
+        },
+        {
+          "line": 157,
+          "ext": "5203"
+        },
+        {
+          "line": 158,
+          "ext": "5204"
+        },
+        {
+          "line": 159,
+          "ext": "5206"
+        },
+        {
+          "line": 160,
+          "ext": "5207"
+        },
+        {
+          "line": 161,
+          "ext": "5212"
+        },
+        {
+          "line": 162,
+          "ext": "5213"
+        },
+        {
+          "line": 163,
+          "ext": "5229"
+        },
+        {
+          "line": 164,
+          "ext": "5230"
+        },
+        {
+          "line": 165,
+          "ext": "7077"
+        },
+        {
+          "line": 166,
+          "ext": "5207"
+        },
+        {
+          "line": 167,
+          "ext": "5208"
+        },
+        {
+          "line": 168,
+          "ext": "7079"
+        },
+        {
+          "line": 169,
+          "ext": "4406"
+        },
+        {
+          "line": 170,
+          "ext": "7075"
+        },
+        {
+          "line": 171,
+          "ext": "4407"
+        },
+        {
+          "line": 172,
+          "ext": "5206"
+        },
+        {
+          "line": 173,
+          "ext": "5205"
+        },
+        {
+          "line": 174,
+          "ext": "5202"
+        }
+      ]
+    },
+    {
+      "name": "p nyathi",
+      "entries": [
+        {
+          "line": 190,
+          "ext": "1185"
+        },
+        {
+          "line": 198,
+          "ext": "1186"
+        }
+      ]
+    },
+    {
+      "name": "s sithole",
+      "entries": [
+        {
+          "line": 191,
+          "ext": "1189"
+        },
+        {
+          "line": 201,
+          "ext": "1141"
+        }
+      ]
+    },
+    {
+      "name": "m sibanda",
+      "entries": [
+        {
+          "line": 219,
+          "ext": "1203"
+        },
+        {
+          "line": 436,
+          "ext": "4037"
+        }
+      ]
+    },
+    {
+      "name": "n.maphosa",
+      "entries": [
+        {
+          "line": 222,
+          "ext": "1204"
+        },
+        {
+          "line": 475,
+          "ext": "8517"
+        }
+      ]
+    },
+    {
+      "name": "messangers",
+      "entries": [
+        {
+          "line": 226,
+          "ext": "1218"
+        },
+        {
+          "line": 284,
+          "ext": "7010"
+        }
+      ]
+    },
+    {
+      "name": "s.ndlovu",
+      "entries": [
+        {
+          "line": 236,
+          "ext": ""
+        },
+        {
+          "line": 551,
+          "ext": "8003"
+        },
+        {
+          "line": 570,
+          "ext": "8013"
+        },
+        {
+          "line": 593,
+          "ext": "8021"
+        }
+      ]
+    },
+    {
+      "name": "nketa ambulance",
+      "entries": [
+        {
+          "line": 249,
+          "ext": "1252"
+        },
+        {
+          "line": 250,
+          "ext": "1253"
+        },
+        {
+          "line": 251,
+          "ext": "1254"
+        }
+      ]
+    },
+    {
+      "name": "switchboard",
+      "entries": [
+        {
+          "line": 255,
+          "ext": "1270"
+        },
+        {
+          "line": 256,
+          "ext": "1264"
+        }
+      ]
+    },
+    {
+      "name": "n.ndlovu",
+      "entries": [
+        {
+          "line": 262,
+          "ext": "1262"
+        },
+        {
+          "line": 304,
+          "ext": "7093"
+        }
+      ]
+    },
+    {
+      "name": "g.sibanda",
+      "entries": [
+        {
+          "line": 263,
+          "ext": "1263"
+        },
+        {
+          "line": 433,
+          "ext": "4021"
+        },
+        {
+          "line": 490,
+          "ext": "8561"
+        }
+      ]
+    },
+    {
+      "name": "i.matare",
+      "entries": [
+        {
+          "line": 278,
+          "ext": "7004"
+        },
+        {
+          "line": 288,
+          "ext": "7008"
+        }
+      ]
+    },
+    {
+      "name": "g.ncube",
+      "entries": [
+        {
+          "line": 280,
+          "ext": "7021"
+        },
+        {
+          "line": 567,
+          "ext": "8017"
+        }
+      ]
+    },
+    {
+      "name": "p.sibanda",
+      "entries": [
+        {
+          "line": 298,
+          "ext": "7056"
+        },
+        {
+          "line": 416,
+          "ext": "4002"
+        },
+        {
+          "line": 450,
+          "ext": "4035"
+        },
+        {
+          "line": 580,
+          "ext": "8014"
+        }
+      ]
+    },
+    {
+      "name": "p.ncube",
+      "entries": [
+        {
+          "line": 300,
+          "ext": "7058"
+        },
+        {
+          "line": 562,
+          "ext": "8030"
+        }
+      ]
+    },
+    {
+      "name": "m.moyo",
+      "entries": [
+        {
+          "line": 309,
+          "ext": "7092"
+        },
+        {
+          "line": 393,
+          "ext": "7211"
+        }
+      ]
+    },
+    {
+      "name": "n.moyo",
+      "entries": [
+        {
+          "line": 328,
+          "ext": "7609"
+        },
+        {
+          "line": 472,
+          "ext": "8514"
+        },
+        {
+          "line": 477,
+          "ext": "8518"
+        },
+        {
+          "line": 573,
+          "ext": "8035"
+        }
+      ]
+    },
+    {
+      "name": "null",
+      "entries": [
+        {
+          "line": 337,
+          "ext": "7621"
+        },
+        {
+          "line": 341,
+          "ext": "7103"
+        },
+        {
+          "line": 347,
+          "ext": "7119"
+        },
+        {
+          "line": 360,
+          "ext": "7139"
+        },
+        {
+          "line": 361,
+          "ext": "7140"
+        },
+        {
+          "line": 362,
+          "ext": "7119"
+        },
+        {
+          "line": 378,
+          "ext": "7109"
+        },
+        {
+          "line": 394,
+          "ext": "7212"
+        },
+        {
+          "line": 395,
+          "ext": "7224"
+        },
+        {
+          "line": 396,
+          "ext": "7225"
+        },
+        {
+          "line": 397,
+          "ext": "7226"
+        },
+        {
+          "line": 398,
+          "ext": "7227"
+        },
+        {
+          "line": 399,
+          "ext": "7228"
+        },
+        {
+          "line": 400,
+          "ext": "7229"
+        },
+        {
+          "line": 401,
+          "ext": "7231"
+        },
+        {
+          "line": 402,
+          "ext": "7239"
+        },
+        {
+          "line": 403,
+          "ext": "7232"
+        },
+        {
+          "line": 404,
+          "ext": "7233"
+        },
+        {
+          "line": 405,
+          "ext": "7234"
+        },
+        {
+          "line": 406,
+          "ext": "7235"
+        },
+        {
+          "line": 407,
+          "ext": "7236"
+        },
+        {
+          "line": 408,
+          "ext": "7237"
+        },
+        {
+          "line": 409,
+          "ext": "7238"
+        },
+        {
+          "line": 410,
+          "ext": "7239"
+        },
+        {
+          "line": 411,
+          "ext": "7240"
+        },
+        {
+          "line": 412,
+          "ext": "7241"
+        },
+        {
+          "line": 413,
+          "ext": "7071"
+        },
+        {
+          "line": 417,
+          "ext": "2175"
+        },
+        {
+          "line": 440,
+          "ext": "9016"
+        },
+        {
+          "line": 441,
+          "ext": "7073"
+        },
+        {
+          "line": 442,
+          "ext": "9017"
+        },
+        {
+          "line": 445,
+          "ext": "4033"
+        },
+        {
+          "line": 446,
+          "ext": "4032"
+        },
+        {
+          "line": 447,
+          "ext": "4032"
+        },
+        {
+          "line": 454,
+          "ext": "4039"
+        },
+        {
+          "line": 459,
+          "ext": "8500"
+        },
+        {
+          "line": 463,
+          "ext": "8505"
+        },
+        {
+          "line": 466,
+          "ext": "8508"
+        },
+        {
+          "line": 468,
+          "ext": "8510"
+        },
+        {
+          "line": 479,
+          "ext": "8550"
+        },
+        {
+          "line": 493,
+          "ext": "8564"
+        },
+        {
+          "line": 507,
+          "ext": "6000"
+        },
+        {
+          "line": 510,
+          "ext": "6003"
+        },
+        {
+          "line": 511,
+          "ext": "6004"
+        },
+        {
+          "line": 519,
+          "ext": "6012"
+        },
+        {
+          "line": 538,
+          "ext": "6056"
+        },
+        {
+          "line": 539,
+          "ext": "6057"
+        },
+        {
+          "line": 540,
+          "ext": "6058"
+        },
+        {
+          "line": 542,
+          "ext": "6060"
+        },
+        {
+          "line": 543,
+          "ext": "6059"
+        },
+        {
+          "line": 544,
+          "ext": "6055"
+        },
+        {
+          "line": 547,
+          "ext": "6063"
+        }
+      ]
+    },
+    {
+      "name": "n.bhebhe",
+      "entries": [
+        {
+          "line": 342,
+          "ext": "7113"
+        },
+        {
+          "line": 350,
+          "ext": "7136"
+        }
+      ]
+    },
+    {
+      "name": "talent tshuma",
+      "entries": [
+        {
+          "line": 352,
+          "ext": "7150"
+        },
+        {
+          "line": 353,
+          "ext": "7151"
+        }
+      ]
+    },
+    {
+      "name": "khuphe",
+      "entries": [
+        {
+          "line": 357,
+          "ext": "7117"
+        },
+        {
+          "line": 377,
+          "ext": "7108"
+        }
+      ]
+    },
+    {
+      "name": "meter reading",
+      "entries": [
+        {
+          "line": 363,
+          "ext": "7141"
+        },
+        {
+          "line": 366,
+          "ext": "7144"
+        },
+        {
+          "line": 367,
+          "ext": "7145"
+        },
+        {
+          "line": 368,
+          "ext": "7146"
+        },
+        {
+          "line": 369,
+          "ext": "7148"
+        },
+        {
+          "line": 370,
+          "ext": "7153"
+        }
+      ]
+    },
+    {
+      "name": "s.ncube",
+      "entries": [
+        {
+          "line": 415,
+          "ext": "4001"
+        },
+        {
+          "line": 428,
+          "ext": "9014"
+        },
+        {
+          "line": 501,
+          "ext": "8572"
+        },
+        {
+          "line": 505,
+          "ext": "8576"
+        },
+        {
+          "line": 578,
+          "ext": "8015"
+        },
+        {
+          "line": 586,
+          "ext": "8042"
+        }
+      ]
+    },
+    {
+      "name": "b.ndlovu",
+      "entries": [
+        {
+          "line": 420,
+          "ext": "4005"
+        },
+        {
+          "line": 557,
+          "ext": "8012"
+        },
+        {
+          "line": 581,
+          "ext": "8012"
+        }
+      ]
+    },
+    {
+      "name": "m.sibanda",
+      "entries": [
+        {
+          "line": 434,
+          "ext": "4022"
+        },
+        {
+          "line": 452,
+          "ext": "4037"
+        },
+        {
+          "line": 473,
+          "ext": "8515"
+        }
+      ]
+    },
+    {
+      "name": "e.moyo",
+      "entries": [
+        {
+          "line": 439,
+          "ext": "9015"
+        },
+        {
+          "line": 456,
+          "ext": "4041"
+        }
+      ]
+    },
+    {
+      "name": "m.funi",
+      "entries": [
+        {
+          "line": 455,
+          "ext": "4040"
+        },
+        {
+          "line": 458,
+          "ext": "4043"
+        }
+      ]
+    },
+    {
+      "name": "n.ncube",
+      "entries": [
+        {
+          "line": 467,
+          "ext": "8509"
+        },
+        {
+          "line": 594,
+          "ext": "8005"
+        }
+      ]
+    },
+    {
+      "name": "t.ndlovu",
+      "entries": [
+        {
+          "line": 489,
+          "ext": "8560"
+        },
+        {
+          "line": 506,
+          "ext": "8577"
+        }
+      ]
+    }
+  ],
+  "emptyExts": [
+    {
+      "line": 224,
+      "name": "O V Ndiweni"
+    },
+    {
+      "line": 225,
+      "name": "R.NDLOVU"
+    },
+    {
+      "line": 234,
+      "name": "PRINTING"
+    },
+    {
+      "line": 235,
+      "name": "H.NDIWENI"
+    },
+    {
+      "line": 236,
+      "name": "S.NDLOVU"
+    },
+    {
+      "line": 254,
+      "name": "EMERGENCY"
+    },
+    {
+      "line": 258,
+      "name": ""
+    }
+  ],
+  "emptyNames": [
+    {
+      "line": 180,
+      "data": ",1116,,TOWN CLERK'S,P R,2,Ast Communication Officer,,,CITY HALL"
+    },
+    {
+      "line": 183,
+      "data": ",1112,,TOWN CLERK'S,CEDO,208,,,,CITY HALL"
+    },
+    {
+      "line": 186,
+      "data": ",1118,,TOWN CLERK'S,CEDO,1000,,,,CITY HALL"
+    },
+    {
+      "line": 220,
+      "data": ",1229,,CHAMBER SECRETARY,,108B,Admin Assistant,,,CITY HALL"
+    },
+    {
+      "line": 246,
+      "data": ",1228,,CHAMBER SECRETARY,DEBT COLLECTION,1000,CITYHAL CARETAKER,,,CITY HALL"
+    },
+    {
+      "line": 258,
+      "data": ",,,CHAMBER SECRETARY,FIRE BRIGADE,1000,,,,CITY HALL"
+    },
+    {
+      "line": 260,
+      "data": ",1260,,CHAMBER SECRETARY,SECURITY,416,RECEIPTION TRAFFIC & SECURITY,,,CITY HALL"
+    },
+    {
+      "line": 261,
+      "data": ",1261,,CHAMBER SECRETARY,SECURITY,1000,REVENUE HALL TRAFFIC,,,CITY HALL"
+    },
+    {
+      "line": 272,
+      "data": ",1279,,CHAMBER SECRETARY,TRAFFIC,1000,,,,CITY HALL"
+    },
+    {
+      "line": 273,
+      "data": ",1280,,CHAMBER SECRETARY,TRAFFIC,1000,TOWERBLOCK,,,CITY HALL"
+    },
+    {
+      "line": 588,
+      "data": ",8037,,TOWNPLANNING,SMALL & MEDIUM INT,809,TOWN PLANNER TECHNICIAN,,,TOWERBLOCK"
+    }
+  ]
+}

@@ -1,0 +1,1118 @@
+{
+  "emptyNames": [
+    {
+      "line": 180,
+      "data": ",1116,,TOWN CLERK'S,P R,2,Ast Communication Officer,,,CITY HALL"
+    },
+    {
+      "line": 183,
+      "data": ",1112,,TOWN CLERK'S,CEDO,208,,,,CITY HALL"
+    },
+    {
+      "line": 186,
+      "data": ",1118,,TOWN CLERK'S,CEDO,1000,,,,CITY HALL"
+    },
+    {
+      "line": 220,
+      "data": ",1229,,CHAMBER SECRETARY,,108B,Admin Assistant,,,CITY HALL"
+    },
+    {
+      "line": 246,
+      "data": ",1228,,CHAMBER SECRETARY,DEBT COLLECTION,1000,CITYHAL CARETAKER,,,CITY HALL"
+    },
+    {
+      "line": 258,
+      "data": ",,,CHAMBER SECRETARY,FIRE BRIGADE,1000,,,,CITY HALL"
+    },
+    {
+      "line": 260,
+      "data": ",1260,,CHAMBER SECRETARY,SECURITY,416,RECEIPTION TRAFFIC & SECURITY,,,CITY HALL"
+    },
+    {
+      "line": 261,
+      "data": ",1261,,CHAMBER SECRETARY,SECURITY,1000,REVENUE HALL TRAFFIC,,,CITY HALL"
+    },
+    {
+      "line": 272,
+      "data": ",1279,,CHAMBER SECRETARY,TRAFFIC,1000,,,,CITY HALL"
+    },
+    {
+      "line": 273,
+      "data": ",1280,,CHAMBER SECRETARY,TRAFFIC,1000,TOWERBLOCK,,,CITY HALL"
+    },
+    {
+      "line": 588,
+      "data": ",8037,,TOWNPLANNING,SMALL & MEDIUM INT,809,TOWN PLANNER TECHNICIAN,,,TOWERBLOCK"
+    }
+  ],
+  "duplicateNames": [
+    {
+      "line": 35,
+      "name": "CLENSING",
+      "ext": "2100"
+    },
+    {
+      "line": 42,
+      "name": "B.NGWENYA",
+      "ext": "3014"
+    },
+    {
+      "line": 44,
+      "name": "pharm tech",
+      "ext": "3139"
+    },
+    {
+      "line": 47,
+      "name": "lab",
+      "ext": "3017"
+    },
+    {
+      "line": 48,
+      "name": "SISTER IN CHARGE",
+      "ext": "3018"
+    },
+    {
+      "line": 50,
+      "name": "SISTER IN CHARGE",
+      "ext": "3020"
+    },
+    {
+      "line": 51,
+      "name": "COMMUNITY SISTER",
+      "ext": "3021"
+    },
+    {
+      "line": 52,
+      "name": "SISTER IN CHARGE",
+      "ext": "3022"
+    },
+    {
+      "line": 53,
+      "name": "COMMUNITY SISTER",
+      "ext": "3023"
+    },
+    {
+      "line": 54,
+      "name": "SISTER IN CHARGE",
+      "ext": "3024"
+    },
+    {
+      "line": 55,
+      "name": "COMMUNITY SISTER",
+      "ext": "3025"
+    },
+    {
+      "line": 56,
+      "name": "SISTER IN CHARGE",
+      "ext": "3026"
+    },
+    {
+      "line": 57,
+      "name": "COMMUNITY SISTER",
+      "ext": "3027"
+    },
+    {
+      "line": 58,
+      "name": "SISTER IN CHARGE",
+      "ext": "3028"
+    },
+    {
+      "line": 59,
+      "name": "COMMUNITY SISTER",
+      "ext": "3029"
+    },
+    {
+      "line": 60,
+      "name": "SISTER IN CHARGE",
+      "ext": "3030"
+    },
+    {
+      "line": 61,
+      "name": "COMMUNITY SISTER",
+      "ext": "3037"
+    },
+    {
+      "line": 62,
+      "name": "SISTER IN CHARGE",
+      "ext": "3038"
+    },
+    {
+      "line": 63,
+      "name": "COMMUNITY SISTER",
+      "ext": "3040"
+    },
+    {
+      "line": 64,
+      "name": "SISTER IN CHARGE",
+      "ext": "3039"
+    },
+    {
+      "line": 65,
+      "name": "COMMUNITY SISTER",
+      "ext": "3041"
+    },
+    {
+      "line": 66,
+      "name": "SISTER IN CHARGE",
+      "ext": "3046"
+    },
+    {
+      "line": 67,
+      "name": "COMMUNITY SISTER",
+      "ext": "3047"
+    },
+    {
+      "line": 68,
+      "name": "SISTER IN CHARGE",
+      "ext": "3048"
+    },
+    {
+      "line": 69,
+      "name": "COMMUNITY SISTER",
+      "ext": "3049"
+    },
+    {
+      "line": 70,
+      "name": "SISTER IN CHARGE",
+      "ext": "3050"
+    },
+    {
+      "line": 71,
+      "name": "COMMUNITY SISTER",
+      "ext": "3051"
+    },
+    {
+      "line": 72,
+      "name": "SISTER IN CHARGE",
+      "ext": "3042"
+    },
+    {
+      "line": 73,
+      "name": "COMMUNITY SISTER",
+      "ext": "3043"
+    },
+    {
+      "line": 74,
+      "name": "SISTER IN CHARGE",
+      "ext": "3044"
+    },
+    {
+      "line": 75,
+      "name": "COMMUNITY SISTER",
+      "ext": "3045"
+    },
+    {
+      "line": 76,
+      "name": "SISTER IN CHARGE",
+      "ext": "3054"
+    },
+    {
+      "line": 77,
+      "name": "COMMUNITY SISTER",
+      "ext": "3055"
+    },
+    {
+      "line": 78,
+      "name": "SISTER IN CHARGE",
+      "ext": "3056"
+    },
+    {
+      "line": 79,
+      "name": "COMMUNITY SISTER",
+      "ext": "3057"
+    },
+    {
+      "line": 80,
+      "name": "SISTER IN CHARGE",
+      "ext": "3058"
+    },
+    {
+      "line": 81,
+      "name": "COMMUNITY SISTER",
+      "ext": "3059"
+    },
+    {
+      "line": 82,
+      "name": "SISTER IN CHARGE",
+      "ext": "3052"
+    },
+    {
+      "line": 83,
+      "name": "COMMUNITY SISTER",
+      "ext": "3053"
+    },
+    {
+      "line": 84,
+      "name": "SISTER IN CHARGE",
+      "ext": "3060"
+    },
+    {
+      "line": 85,
+      "name": "COMMUNITY SISTER",
+      "ext": "3061"
+    },
+    {
+      "line": 104,
+      "name": "CLERICAL ASST",
+      "ext": "5022"
+    },
+    {
+      "line": 105,
+      "name": "CLERICAL ASST",
+      "ext": "5023"
+    },
+    {
+      "line": 106,
+      "name": "CLERICAL ASST",
+      "ext": "900"
+    },
+    {
+      "line": 119,
+      "name": "\"J",
+      "ext": "MPOFU\""
+    },
+    {
+      "line": 125,
+      "name": "ADMIN",
+      "ext": "9004"
+    },
+    {
+      "line": 126,
+      "name": "S.DUBE",
+      "ext": "5053"
+    },
+    {
+      "line": 132,
+      "name": "HOUSING OFFICER",
+      "ext": "90000"
+    },
+    {
+      "line": 133,
+      "name": "HOUSING OFFICER",
+      "ext": "5056"
+    },
+    {
+      "line": 134,
+      "name": "HOUSING OFFICER",
+      "ext": "5057"
+    },
+    {
+      "line": 135,
+      "name": "HOUSING OFFICER",
+      "ext": "5058"
+    },
+    {
+      "line": 136,
+      "name": "HOUSING OFFICER",
+      "ext": "5059"
+    },
+    {
+      "line": 137,
+      "name": "HOUSING OFFICER",
+      "ext": "5060"
+    },
+    {
+      "line": 138,
+      "name": "HOUSING OFFICER",
+      "ext": "5061"
+    },
+    {
+      "line": 139,
+      "name": "HOUSING OFFICER",
+      "ext": "5062"
+    },
+    {
+      "line": 140,
+      "name": "HOUSING OFFICER",
+      "ext": "5063"
+    },
+    {
+      "line": 141,
+      "name": "HOUSING OFFICER",
+      "ext": "5079"
+    },
+    {
+      "line": 142,
+      "name": "HOUSING OFFICER",
+      "ext": "5077"
+    },
+    {
+      "line": 143,
+      "name": "HOUSING OFFICER",
+      "ext": "5064"
+    },
+    {
+      "line": 144,
+      "name": "HOUSING OFFICER",
+      "ext": "5055"
+    },
+    {
+      "line": 145,
+      "name": "HOUSING OFFICER",
+      "ext": "5066"
+    },
+    {
+      "line": 146,
+      "name": "HOUSING OFFICER",
+      "ext": "5078"
+    },
+    {
+      "line": 147,
+      "name": "HOUSING OFFICER",
+      "ext": "5068"
+    },
+    {
+      "line": 148,
+      "name": "HOUSING OFFICER",
+      "ext": "5070"
+    },
+    {
+      "line": 149,
+      "name": "HOUSING OFFICER",
+      "ext": "5080"
+    },
+    {
+      "line": 150,
+      "name": "HOUSING OFFICER",
+      "ext": "5076"
+    },
+    {
+      "line": 151,
+      "name": "HOUSING OFFICER",
+      "ext": "9009"
+    },
+    {
+      "line": 152,
+      "name": "HOUSING OFFICER",
+      "ext": "9010"
+    },
+    {
+      "line": 155,
+      "name": "BURSER",
+      "ext": "5201"
+    },
+    {
+      "line": 156,
+      "name": "BURSER",
+      "ext": "5202"
+    },
+    {
+      "line": 157,
+      "name": "BURSER",
+      "ext": "5203"
+    },
+    {
+      "line": 158,
+      "name": "BURSER",
+      "ext": "5204"
+    },
+    {
+      "line": 159,
+      "name": "BURSER",
+      "ext": "5206"
+    },
+    {
+      "line": 160,
+      "name": "BURSER",
+      "ext": "5207"
+    },
+    {
+      "line": 161,
+      "name": "BURSER",
+      "ext": "5212"
+    },
+    {
+      "line": 162,
+      "name": "BURSER",
+      "ext": "5213"
+    },
+    {
+      "line": 163,
+      "name": "BURSER",
+      "ext": "5229"
+    },
+    {
+      "line": 164,
+      "name": "BURSER",
+      "ext": "5230"
+    },
+    {
+      "line": 165,
+      "name": "BURSER",
+      "ext": "7077"
+    },
+    {
+      "line": 166,
+      "name": "BURSER",
+      "ext": "5207"
+    },
+    {
+      "line": 167,
+      "name": "BURSER",
+      "ext": "5208"
+    },
+    {
+      "line": 168,
+      "name": "BURSER",
+      "ext": "7079"
+    },
+    {
+      "line": 169,
+      "name": "BURSER",
+      "ext": "4406"
+    },
+    {
+      "line": 170,
+      "name": "BURSER",
+      "ext": "7075"
+    },
+    {
+      "line": 171,
+      "name": "BURSER",
+      "ext": "4407"
+    },
+    {
+      "line": 172,
+      "name": "BURSER",
+      "ext": "5206"
+    },
+    {
+      "line": 173,
+      "name": "BURSER",
+      "ext": "5205"
+    },
+    {
+      "line": 174,
+      "name": "BURSER",
+      "ext": "5202"
+    },
+    {
+      "line": 196,
+      "name": "T Dube",
+      "ext": "1190"
+    },
+    {
+      "line": 198,
+      "name": "P Nyathi",
+      "ext": "1186"
+    },
+    {
+      "line": 201,
+      "name": "S Sithole",
+      "ext": "1141"
+    },
+    {
+      "line": 228,
+      "name": "T.SITHOLE",
+      "ext": "1214"
+    },
+    {
+      "line": 250,
+      "name": "NKETA AMBULANCE",
+      "ext": "1253"
+    },
+    {
+      "line": 251,
+      "name": "NKETA AMBULANCE",
+      "ext": "1254"
+    },
+    {
+      "line": 256,
+      "name": "SWITCHBOARD",
+      "ext": "1264"
+    },
+    {
+      "line": 282,
+      "name": "S.SIBANDA",
+      "ext": "7024"
+    },
+    {
+      "line": 284,
+      "name": "MESSANGERS",
+      "ext": "7010"
+    },
+    {
+      "line": 288,
+      "name": "I.MATARE",
+      "ext": "7008"
+    },
+    {
+      "line": 289,
+      "name": "M.MPOFU",
+      "ext": "7021"
+    },
+    {
+      "line": 299,
+      "name": "N.Dube",
+      "ext": "7055"
+    },
+    {
+      "line": 304,
+      "name": "N.NDLOVU",
+      "ext": "7093"
+    },
+    {
+      "line": 341,
+      "name": "NULL",
+      "ext": "7103"
+    },
+    {
+      "line": 347,
+      "name": "NULL",
+      "ext": "7119"
+    },
+    {
+      "line": 350,
+      "name": "N.BHEBHE",
+      "ext": "7136"
+    },
+    {
+      "line": 353,
+      "name": "TALENT TSHUMA",
+      "ext": "7151"
+    },
+    {
+      "line": 360,
+      "name": "NULL",
+      "ext": "7139"
+    },
+    {
+      "line": 361,
+      "name": "NULL",
+      "ext": "7140"
+    },
+    {
+      "line": 362,
+      "name": "NULL",
+      "ext": "7119"
+    },
+    {
+      "line": 366,
+      "name": "Meter Reading",
+      "ext": "7144"
+    },
+    {
+      "line": 367,
+      "name": "Meter Reading",
+      "ext": "7145"
+    },
+    {
+      "line": 368,
+      "name": "Meter Reading",
+      "ext": "7146"
+    },
+    {
+      "line": 369,
+      "name": "Meter Reading",
+      "ext": "7148"
+    },
+    {
+      "line": 370,
+      "name": "Meter Reading",
+      "ext": "7153"
+    },
+    {
+      "line": 378,
+      "name": "NULL",
+      "ext": "7109"
+    },
+    {
+      "line": 393,
+      "name": "M.MOYO",
+      "ext": "7211"
+    },
+    {
+      "line": 394,
+      "name": "NULL",
+      "ext": "7212"
+    },
+    {
+      "line": 395,
+      "name": "NULL",
+      "ext": "7224"
+    },
+    {
+      "line": 396,
+      "name": "NULL",
+      "ext": "7225"
+    },
+    {
+      "line": 397,
+      "name": "NULL",
+      "ext": "7226"
+    },
+    {
+      "line": 398,
+      "name": "NULL",
+      "ext": "7227"
+    },
+    {
+      "line": 399,
+      "name": "NULL",
+      "ext": "7228"
+    },
+    {
+      "line": 400,
+      "name": "NULL",
+      "ext": "7229"
+    },
+    {
+      "line": 401,
+      "name": "NULL",
+      "ext": "7231"
+    },
+    {
+      "line": 402,
+      "name": "NULL",
+      "ext": "7239"
+    },
+    {
+      "line": 403,
+      "name": "NULL",
+      "ext": "7232"
+    },
+    {
+      "line": 404,
+      "name": "NULL",
+      "ext": "7233"
+    },
+    {
+      "line": 405,
+      "name": "NULL",
+      "ext": "7234"
+    },
+    {
+      "line": 406,
+      "name": "NULL",
+      "ext": "7235"
+    },
+    {
+      "line": 407,
+      "name": "NULL",
+      "ext": "7236"
+    },
+    {
+      "line": 408,
+      "name": "NULL",
+      "ext": "7237"
+    },
+    {
+      "line": 409,
+      "name": "NULL",
+      "ext": "7238"
+    },
+    {
+      "line": 410,
+      "name": "NULL",
+      "ext": "7239"
+    },
+    {
+      "line": 411,
+      "name": "NULL",
+      "ext": "7240"
+    },
+    {
+      "line": 412,
+      "name": "NULL",
+      "ext": "7241"
+    },
+    {
+      "line": 413,
+      "name": "NULL",
+      "ext": "7071"
+    },
+    {
+      "line": 416,
+      "name": "P.SIBANDA",
+      "ext": "4002"
+    },
+    {
+      "line": 417,
+      "name": "NULL",
+      "ext": "2175"
+    },
+    {
+      "line": 428,
+      "name": "S.NCUBE",
+      "ext": "9014"
+    },
+    {
+      "line": 433,
+      "name": "G.SIBANDA",
+      "ext": "4021"
+    },
+    {
+      "line": 436,
+      "name": "M Sibanda",
+      "ext": "4037"
+    },
+    {
+      "line": 437,
+      "name": "B.SIBANDA",
+      "ext": "4206"
+    },
+    {
+      "line": 440,
+      "name": "NULL",
+      "ext": "9016"
+    },
+    {
+      "line": 441,
+      "name": "NULL",
+      "ext": "7073"
+    },
+    {
+      "line": 442,
+      "name": "NULL",
+      "ext": "9017"
+    },
+    {
+      "line": 445,
+      "name": "NULL",
+      "ext": "4033"
+    },
+    {
+      "line": 446,
+      "name": "NULL",
+      "ext": "4032"
+    },
+    {
+      "line": 447,
+      "name": "NULL",
+      "ext": "4032"
+    },
+    {
+      "line": 450,
+      "name": "P.SIBANDA",
+      "ext": "4035"
+    },
+    {
+      "line": 452,
+      "name": "M.SIBANDA",
+      "ext": "4037"
+    },
+    {
+      "line": 454,
+      "name": "NULL",
+      "ext": "4039"
+    },
+    {
+      "line": 456,
+      "name": "E.MOYO",
+      "ext": "4041"
+    },
+    {
+      "line": 458,
+      "name": "M.FUNI",
+      "ext": "4043"
+    },
+    {
+      "line": 459,
+      "name": "NULL",
+      "ext": "8500"
+    },
+    {
+      "line": 463,
+      "name": "NULL",
+      "ext": "8505"
+    },
+    {
+      "line": 466,
+      "name": "NULL",
+      "ext": "8508"
+    },
+    {
+      "line": 468,
+      "name": "NULL",
+      "ext": "8510"
+    },
+    {
+      "line": 470,
+      "name": "S.DUBE",
+      "ext": "8512"
+    },
+    {
+      "line": 472,
+      "name": "N.MOYO",
+      "ext": "8514"
+    },
+    {
+      "line": 473,
+      "name": "M.SIBANDA",
+      "ext": "8515"
+    },
+    {
+      "line": 475,
+      "name": "N.MAPHOSA",
+      "ext": "8517"
+    },
+    {
+      "line": 477,
+      "name": "N.MOYO",
+      "ext": "8518"
+    },
+    {
+      "line": 479,
+      "name": "NULL",
+      "ext": "8550"
+    },
+    {
+      "line": 480,
+      "name": "S.DUBE",
+      "ext": "8551"
+    },
+    {
+      "line": 483,
+      "name": "S.DUBE",
+      "ext": "8554"
+    },
+    {
+      "line": 487,
+      "name": "N.MPOFU",
+      "ext": "8558"
+    },
+    {
+      "line": 488,
+      "name": "J.SIBANDA",
+      "ext": "8559"
+    },
+    {
+      "line": 490,
+      "name": "G.SIBANDA",
+      "ext": "8561"
+    },
+    {
+      "line": 493,
+      "name": "NULL",
+      "ext": "8564"
+    },
+    {
+      "line": 501,
+      "name": "S.NCUBE",
+      "ext": "8572"
+    },
+    {
+      "line": 505,
+      "name": "S.NCUBE",
+      "ext": "8576"
+    },
+    {
+      "line": 506,
+      "name": "T.NDLOVU",
+      "ext": "8577"
+    },
+    {
+      "line": 507,
+      "name": "NULL",
+      "ext": "6000"
+    },
+    {
+      "line": 510,
+      "name": "NULL",
+      "ext": "6003"
+    },
+    {
+      "line": 511,
+      "name": "NULL",
+      "ext": "6004"
+    },
+    {
+      "line": 519,
+      "name": "NULL",
+      "ext": "6012"
+    },
+    {
+      "line": 538,
+      "name": "NULL",
+      "ext": "6056"
+    },
+    {
+      "line": 539,
+      "name": "NULL",
+      "ext": "6057"
+    },
+    {
+      "line": 540,
+      "name": "NULL",
+      "ext": "6058"
+    },
+    {
+      "line": 542,
+      "name": "NULL",
+      "ext": "6060"
+    },
+    {
+      "line": 543,
+      "name": "NULL",
+      "ext": "6059"
+    },
+    {
+      "line": 544,
+      "name": "NULL",
+      "ext": "6055"
+    },
+    {
+      "line": 547,
+      "name": "NULL",
+      "ext": "6063"
+    },
+    {
+      "line": 549,
+      "name": "M.NDLOVU",
+      "ext": "8009"
+    },
+    {
+      "line": 551,
+      "name": "S.NDLOVU",
+      "ext": "8003"
+    },
+    {
+      "line": 557,
+      "name": "B.NDLOVU",
+      "ext": "8012"
+    },
+    {
+      "line": 558,
+      "name": "S.SIBANDA",
+      "ext": "8000"
+    },
+    {
+      "line": 560,
+      "name": "S.MKANDLA",
+      "ext": "8006"
+    },
+    {
+      "line": 561,
+      "name": "D.KHUMALO",
+      "ext": "8040"
+    },
+    {
+      "line": 562,
+      "name": "P.NCUBE",
+      "ext": "8030"
+    },
+    {
+      "line": 563,
+      "name": "N.MPOFU",
+      "ext": "8031"
+    },
+    {
+      "line": 567,
+      "name": "G.NCUBE",
+      "ext": "8017"
+    },
+    {
+      "line": 568,
+      "name": "M.NCUBE",
+      "ext": "8018"
+    },
+    {
+      "line": 570,
+      "name": "S.NDLOVU",
+      "ext": "8013"
+    },
+    {
+      "line": 573,
+      "name": "N.MOYO",
+      "ext": "8035"
+    },
+    {
+      "line": 574,
+      "name": "N.DUBE",
+      "ext": "8036"
+    },
+    {
+      "line": 578,
+      "name": "S.NCUBE",
+      "ext": "8015"
+    },
+    {
+      "line": 580,
+      "name": "P.SIBANDA",
+      "ext": "8014"
+    },
+    {
+      "line": 581,
+      "name": "B.NDLOVU",
+      "ext": "8012"
+    },
+    {
+      "line": 586,
+      "name": "S.NCUBE",
+      "ext": "8042"
+    },
+    {
+      "line": 593,
+      "name": "S.NDLOVU",
+      "ext": "8021"
+    },
+    {
+      "line": 594,
+      "name": "N.NCUBE",
+      "ext": "8005"
+    },
+    {
+      "line": 596,
+      "name": "M.NDLOVU",
+      "ext": "8012"
+    }
+  ],
+  "duplicateExtensions": [
+    {
+      "line": 36,
+      "name": "S BANDA",
+      "ext": "3008",
+      "previouslyAssignedTo": "MR  N.P THWALA"
+    },
+    {
+      "line": 244,
+      "name": "M.GUMBO",
+      "ext": "1226",
+      "previouslyAssignedTo": "T.NHLOPE"
+    },
+    {
+      "line": 322,
+      "name": "SIZALOBUHLE SITHOLE",
+      "ext": "7612",
+      "previouslyAssignedTo": "E.MAKUMBIROFA"
+    },
+    {
+      "line": 329,
+      "name": "EDGAR KHUMALO",
+      "ext": "7603",
+      "previouslyAssignedTo": "LINDIWE NCUBE"
+    },
+    {
+      "line": 335,
+      "name": "NQOBANI SIBANDA",
+      "ext": "7612",
+      "previouslyAssignedTo": "E.MAKUMBIROFA"
+    },
+    {
+      "line": 357,
+      "name": "KHUPHE",
+      "ext": "7117",
+      "previouslyAssignedTo": "CONSUMERS ENQUIRY"
+    },
+    {
+      "line": 386,
+      "name": "L.PIRI / mutamaba",
+      "ext": "7205",
+      "previouslyAssignedTo": "C MBANO"
+    },
+    {
+      "line": 513,
+      "name": "Duduzile Dube",
+      "ext": "6005",
+      "previouslyAssignedTo": "NTOKOZO NCUBE"
+    },
+    {
+      "line": 592,
+      "name": "V.NCUBE",
+      "ext": "8016",
+      "previouslyAssignedTo": "A.NCUBE"
+    }
+  ],
+  "validCount": 376,
+  "totalLines": 599
+}

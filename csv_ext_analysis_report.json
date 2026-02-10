@@ -1,0 +1,165 @@
+{
+  "totalLines": 599,
+  "uniqueExtCount": 567,
+  "emptyExtCount": 7,
+  "duplicateExtCount": 24,
+  "duplicateExts": [
+    {
+      "line": 36,
+      "name": "S BANDA",
+      "ext": "3008"
+    },
+    {
+      "line": 166,
+      "name": "BURSER",
+      "ext": "5207"
+    },
+    {
+      "line": 172,
+      "name": "BURSER",
+      "ext": "5206"
+    },
+    {
+      "line": 174,
+      "name": "BURSER",
+      "ext": "5202"
+    },
+    {
+      "line": 196,
+      "name": "T Dube",
+      "ext": "1190"
+    },
+    {
+      "line": 244,
+      "name": "M.GUMBO",
+      "ext": "1226"
+    },
+    {
+      "line": 264,
+      "name": "L.Ndlovu",
+      "ext": "1264"
+    },
+    {
+      "line": 289,
+      "name": "M.MPOFU",
+      "ext": "7021"
+    },
+    {
+      "line": 322,
+      "name": "SIZALOBUHLE SITHOLE",
+      "ext": "7612"
+    },
+    {
+      "line": 329,
+      "name": "EDGAR KHUMALO",
+      "ext": "7603"
+    },
+    {
+      "line": 335,
+      "name": "NQOBANI SIBANDA",
+      "ext": "7612"
+    },
+    {
+      "line": 357,
+      "name": "KHUPHE",
+      "ext": "7117"
+    },
+    {
+      "line": 362,
+      "name": "NULL",
+      "ext": "7119"
+    },
+    {
+      "line": 386,
+      "name": "L.PIRI / mutamaba",
+      "ext": "7205"
+    },
+    {
+      "line": 410,
+      "name": "NULL",
+      "ext": "7239"
+    },
+    {
+      "line": 447,
+      "name": "NULL",
+      "ext": "4032"
+    },
+    {
+      "line": 448,
+      "name": "P.MATEZA",
+      "ext": "4033"
+    },
+    {
+      "line": 452,
+      "name": "M.SIBANDA",
+      "ext": "4037"
+    },
+    {
+      "line": 513,
+      "name": "Duduzile Dube",
+      "ext": "6005"
+    },
+    {
+      "line": 541,
+      "name": "Bhekumuzi Dhlodhlo",
+      "ext": "9017"
+    },
+    {
+      "line": 581,
+      "name": "B.NDLOVU",
+      "ext": "8012"
+    },
+    {
+      "line": 588,
+      "name": "",
+      "ext": "8037"
+    },
+    {
+      "line": 592,
+      "name": "V.NCUBE",
+      "ext": "8016"
+    },
+    {
+      "line": 596,
+      "name": "M.NDLOVU",
+      "ext": "8012"
+    }
+  ],
+  "emptyExts": [
+    {
+      "line": 224,
+      "name": "O V Ndiweni",
+      "data": "O V Ndiweni,,,CHAMBER SECRETARY,,102,RECORDS ASST,,,CITY HALL"
+    },
+    {
+      "line": 225,
+      "name": "R.NDLOVU",
+      "data": "R.NDLOVU,,,CHAMBER SECRETARY,,1000,Caretaker,,,CITY HALL"
+    },
+    {
+      "line": 234,
+      "name": "PRINTING",
+      "data": "PRINTING,,,CHAMBER SECRETARY,,14,,,,CITY HALL"
+    },
+    {
+      "line": 235,
+      "name": "H.NDIWENI",
+      "data": "H.NDIWENI,,,CHAMBER SECRETARY,,STORES,PRINTING,,,STORES"
+    },
+    {
+      "line": 236,
+      "name": "S.NDLOVU",
+      "data": "S.NDLOVU,,,CHAMBER SECRETARY,,STORES,PRINTING,,,STORES"
+    },
+    {
+      "line": 254,
+      "name": "EMERGENCY",
+      "data": "EMERGENCY,,,CHAMBER SECRETARY,FIRE BRIGADE,1000,,,,EMERGENCY"
+    },
+    {
+      "line": 258,
+      "name": "",
+      "data": ",,,CHAMBER SECRETARY,FIRE BRIGADE,1000,,,,CITY HALL"
+    }
+  ]
+}
