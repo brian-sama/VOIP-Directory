@@ -31,17 +31,20 @@ initializeSocket(server);
 // Middleware
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow any origin in development, or specific origins in production
+    // Allow any origin in development
     if (process.env.NODE_ENV !== 'production') {
       callback(null, true);
     } else {
       const allowedOrigins = [
         process.env.FRONTEND_URL,
+        'http://9.135.112.20', // Explicitly allow the current VPS IP
         'http://localhost:5173'
       ];
+      
       if (!origin || allowedOrigins.indexOf(origin) !== -1) {
         callback(null, true);
       } else {
+        console.warn(`[CORS] Origin rejected: ${origin}`);
         callback(new Error('Not allowed by CORS'));
       }
     }
