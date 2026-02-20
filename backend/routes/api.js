@@ -17,33 +17,43 @@ const { generateToken } = require('../middleware/auth');
 
 // @route   POST api/auth/login
 router.post('/auth/login', async (req, res) => {
+    const startTime = Date.now();
     const { username, password } = req.body;
-    if (!username || !password) return res.status(400).json({ msg: 'Please enter all fields' });
-    try {
-        // Normalize input for comparison: handle first initial + surname + punctuation
-        const normalizedInput = generateUsername(username);
+    console.log(`[AUTH] Login attempt for: ${username} at ${new Date().toISOString()}`);
 
+    if (!username || !password) return res.status(400).json({ msg: 'Please enter all fields' });
+    
+    try {
+        // Normalize input for comparison
+        const normalizedInput = generateUsername(username);
+        console.log(`[AUTH] Normalized input: ${normalizedInput}`);
+
+        // 1. Check Admin Table first
         const [adminRows] = await db.query('SELECT * FROM admins WHERE username = ?', [username]);
+        console.log(`[AUTH] Admin check took ${Date.now() - startTime}ms`);
+
         if (adminRows.length > 0 && password === adminRows[0].password) {
             const user = { id: adminRows[0].id, username: adminRows[0].username, role: 'admin' };
             const token = generateToken(user);
 
-            // Set JWT in httpOnly cookie
             res.cookie('token', token, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'lax',
-                maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+                maxAge: 7 * 24 * 60 * 60 * 1000
             });
 
+            console.log(`[AUTH] Admin login successful for ${username} in ${Date.now() - startTime}ms`);
             return res.json({ msg: 'Login successful', role: 'admin', user, token });
         }
 
-        // Query only relevant users
+        // 2. Check Users Table with optimized query
+        // We look for direct matches first, then normalized matches
         const [userRows] = await db.query(
-            'SELECT * FROM users WHERE username = ? OR name_surname = ? OR username = ?',
+            'SELECT id, name_surname, username, department, section, role, password FROM users WHERE username = ? OR name_surname = ? OR username = ? LIMIT 5',
             [username, username, normalizedInput]
         );
+        console.log(`[AUTH] User query took ${Date.now() - startTime}ms. Matches found: ${userRows.length}`);
 
         const matchedUser = userRows.find(user => {
             const storedUsername = (user.username || '').toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -68,11 +78,14 @@ router.post('/auth/login', async (req, res) => {
                 maxAge: 7 * 24 * 60 * 60 * 1000
             });
 
+            console.log(`[AUTH] User login successful for ${username} in ${Date.now() - startTime}ms`);
             return res.json({ msg: 'Login successful', role: user.role, user, token });
         }
+
+        console.log(`[AUTH] Invalid credentials for ${username} after ${Date.now() - startTime}ms`);
         return res.status(400).json({ msg: 'Invalid credentials' });
     } catch (err) {
-        console.error('Login error detail:', err);
+        console.error(`[AUTH] Login error after ${Date.now() - startTime}ms:`, err);
         res.status(500).send('Server Error');
     }
 });

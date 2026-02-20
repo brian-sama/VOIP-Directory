@@ -136,6 +136,40 @@ Before starting, ensure the following are installed on the Windows Server:
 
 ---
 
+## 7. Enabling SSL (HTTPS) - CRITICAL FOR SECURITY
+
+To resolve "Insecure Connection" warnings and protect user credentials, you must enable SSL:
+
+### A. Obtain a Certificate
+
+- **Production**: Use a CA like Let's Encrypt (via `win-acme`) or a purchased certificate.
+- **Internal**: Generate a Self-Signed Certificate in IIS Manager (Server Node -> Server Certificates).
+
+### B. Bind the Certificate
+
+1. In IIS Manager, right-click **VOIP-Directory** -> **Edit Bindings...**.
+2. Click **Add**.
+3. Type: `https`.
+4. Port: `443` (standard).
+5. SSL Certificate: Select your certificate.
+6. Click **OK**.
+
+### C. Force HTTPS (Optional but Recommended)
+
+Add this rule to your `web.config` inside `<rewrite><rules>`:
+
+```xml
+<rule name="Redirect to HTTPS" stopProcessing="true">
+  <match url="(.*)" />
+  <conditions>
+    <add input="{HTTPS}" pattern="^OFF$" />
+  </conditions>
+  <action type="Redirect" url="https://{HTTP_HOST}/{R:1}" redirectType="SeeOther" />
+</rule>
+```
+
+---
+
 ## Troubleshooting
 
 - **502.3 Bad Gateway**: Usually means the Node.js backend is not running or the reverse proxy URL is incorrect.
