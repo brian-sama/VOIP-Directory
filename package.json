@@ -1,7 +1,7 @@
 {
-  "name": "voip-directory",
+  "name": "bcc-directory",
   "version": "1.0.0",
-  "description": "VOIP Directory & Extension Monitoring System",
+  "description": "BCC Directory & Extension Monitoring System",
   "scripts": {
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "cd backend && npm run dev",

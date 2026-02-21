@@ -3,6 +3,9 @@ const http = require('http');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const os = require('os');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const xss = require('xss-clean');
 require('dotenv').config();
 
 // Utility to get local IP address
@@ -40,7 +43,7 @@ app.use(cors({
         'http://9.135.112.20', // Explicitly allow the current VPS IP
         'http://localhost:5173'
       ];
-      
+
       if (!origin || allowedOrigins.indexOf(origin) !== -1) {
         callback(null, true);
       } else {
@@ -51,8 +54,21 @@ app.use(cors({
   },
   credentials: true
 }));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
+
+// Security Middleware
+app.use(helmet());
+app.use(xss());
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 500, // Limit each IP to 500 requests per `window` (here, per 15 minutes)
+  message: 'Too many requests from this IP, please try again after 15 minutes',
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+app.use('/api', limiter);
 
 // Define Routes
 app.use('/api', require('./routes/api'));
@@ -60,7 +76,13 @@ app.use('/api', require('./routes/api'));
 const { startServices } = require('./services');
 
 app.get('/', (req, res) => {
-  res.send('BCC VOIP Directory Backend is running...');
+  res.send('BCC DIRECTORY Backend is running...');
+});
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error('[Global Error]', err.stack);
+  res.status(500).json({ error: 'Internal Server Error' });
 });
 
 // Start the server (using 'server' instead of 'app' for Socket.io)

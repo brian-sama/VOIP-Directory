@@ -1,6 +1,6 @@
 module.exports = {
     apps: [{
-        name: 'voip-directory-backend',
+        name: 'bcc-directory-backend',
         script: './server.js',
         instances: 'max', // Use all CPU cores
         exec_mode: 'cluster',

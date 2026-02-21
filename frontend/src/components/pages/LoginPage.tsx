@@ -4,7 +4,11 @@ import { useAuth } from '../../context/AuthContext';
 import { apiService } from '../../services/apiService';
 import logo from '../../assets/logo.jpg';
 
-export const LoginPage: React.FC = () => {
+interface LoginPageProps {
+    onBack?: () => void;
+}
+
+export const LoginPage: React.FC<LoginPageProps> = ({ onBack }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -29,11 +33,20 @@ export const LoginPage: React.FC = () => {
     return (
         <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 font-sans">
             <div className="max-w-md w-full animate-fade-in">
-                <div className="text-center mb-10">
+                <div className="text-center mb-10 relative">
+                    {onBack && (
+                        <button
+                            type="button"
+                            onClick={onBack}
+                            className="absolute left-0 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900 transition-colors font-bold text-sm flex items-center gap-2"
+                        >
+                            &larr; Back
+                        </button>
+                    )}
                     <div className="inline-flex items-center justify-center mb-6">
                         <img src={logo} alt="BCC Logo" className="w-24 h-24 object-contain" />
                     </div>
-                    <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">BCC VOIP Directory</h1>
+                    <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">BCC DIRECTORY</h1>
                     <p className="text-slate-500 mt-2 font-medium">Monitoring & Communications Hub</p>
                 </div>
 

@@ -39,14 +39,14 @@ import { LoginPage } from './components/pages/LoginPage';
 // @ts-ignore
 import logo from './assets/logo.jpg';
 
-type View = 'DASHBOARD' | 'DIRECTORY' | 'ADMIN' | 'REPORTS' | 'LOGS';
-type SortKey = 'name_surname' | 'extension_number' | 'ip_address' | 'department' | 'status';
+type View = 'DASHBOARD' | 'DIRECTORY' | 'ADMIN' | 'REPORTS' | 'LOGS' | 'LOGIN';
+type SortKey = 'name_surname' | 'email' | 'extension_number' | 'ip_address' | 'department' | 'status';
 
 const App: React.FC = () => {
   const { isAuthenticated, logout, isLoading: authLoading, user: authUser } = useAuth();
   const { success, error: toastError } = useToast();
   const [activeView, setActiveView] = useState<View>('DIRECTORY');
-  
+
   const stripPunctuation = (str: string) => str.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
 
   const [users, setUsers] = useState<any[]>([]);
@@ -150,13 +150,15 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
+    fetchData();
     if (isAuthenticated) {
-      fetchData();
-      if (!isAdmin) setActiveView('DIRECTORY');
+      if (!isAdmin && activeView === 'LOGIN') setActiveView('DIRECTORY');
+      else if (isAdmin && activeView === 'LOGIN') setActiveView('DASHBOARD');
     } else {
       // Clear search queries when user logs out to isolate search state
       setSearchQuery('');
       setAdminSearchQuery('');
+      setActiveView('DIRECTORY');
     }
   }, [isAuthenticated, isAdmin]);
 
@@ -190,6 +192,7 @@ const App: React.FC = () => {
       const strippedQuery = stripPunctuation(searchQuery);
       result = result.filter((u: any) =>
         stripPunctuation(u.name_surname || '').includes(strippedQuery) ||
+        stripPunctuation(u.email || '').includes(strippedQuery) ||
         stripPunctuation(u.extension_number || '').includes(strippedQuery) ||
         stripPunctuation(u.ip_address || '').includes(strippedQuery) ||
         stripPunctuation(u.department || '').includes(strippedQuery) ||
@@ -232,6 +235,7 @@ const App: React.FC = () => {
     return {
       ...user,
       name_surname: toEmpty(user.name_surname),
+      email: toEmpty(user.email),
       extension_number: toEmpty(user.extension_number),
       ip_address: toEmpty(user.ip_address),
       department: toEmpty(user.department),
@@ -251,6 +255,7 @@ const App: React.FC = () => {
       const strippedAdminQuery = stripPunctuation(adminSearchQuery);
       result = result.filter((u: any) =>
         stripPunctuation(u.name_surname || '').includes(strippedAdminQuery) ||
+        stripPunctuation(u.email || '').includes(strippedAdminQuery) ||
         stripPunctuation(u.extension_number || '').includes(strippedAdminQuery) ||
         stripPunctuation(u.ip_address || '').includes(strippedAdminQuery)
       );
@@ -323,7 +328,7 @@ const App: React.FC = () => {
   };
 
   const handleExportCSV = () => {
-    const headers = ['name_surname', 'extension_number', 'ip_address', 'department', 'section', 'station', 'mac_address', 'phone_model', 'designation', 'office_number'];
+    const headers = ['name_surname', 'email', 'extension_number', 'ip_address', 'department', 'section', 'station', 'mac_address', 'phone_model', 'designation', 'office_number'];
     const csvRows = [headers.join(',')];
 
     users.forEach((u: any) => {
@@ -335,7 +340,7 @@ const App: React.FC = () => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `BCC_VOIP_Directory_Export_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `BCC_DIRECTORY_Export_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     success("Directory exported to CSV.");
   };
@@ -376,7 +381,7 @@ const App: React.FC = () => {
   );
 
   if (authLoading) return <div className="min-h-screen bg-white flex items-center justify-center"><RefreshCw className="w-12 h-12 text-blue-600 animate-spin" /></div>;
-  if (!isAuthenticated) return <LoginPage />;
+  if (activeView === 'LOGIN') return <LoginPage onBack={() => setActiveView('DIRECTORY')} />;
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
@@ -384,7 +389,7 @@ const App: React.FC = () => {
         <div className="max-w-7xl mx-auto h-full flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src={logo} alt="BCC" className="w-10 h-10 object-contain" />
-            <h1 className="text-xl font-black text-slate-900 tracking-tight hidden lg:block">BCC VOIP Directory</h1>
+            <h1 className="text-xl font-black text-slate-900 tracking-tight hidden lg:block">BCC DIRECTORY</h1>
           </div>
 
           <div className="flex items-center gap-4">
@@ -403,13 +408,21 @@ const App: React.FC = () => {
             <div className="h-8 w-[1px] bg-slate-200 mx-2"></div>
 
             <div className="flex items-center gap-3 group">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-bold text-slate-900 leading-none capitalize">{authUser?.username?.toLowerCase().replace(/_/g, ' ')}</p>
-                <p className="text-[10px] font-black text-slate-400 mt-1 uppercase">{authUser?.role}</p>
-              </div>
-              <button onClick={() => { if (confirm('Exit Session?')) logout(); }} title="Logout" aria-label="Logout" className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center hover:bg-rose-600 transition-all shadow-lg hover:shadow-rose-100">
-                <LogOut className="w-4 h-4" />
-              </button>
+              {isAuthenticated ? (
+                <>
+                  <div className="text-right hidden sm:block">
+                    <p className="text-sm font-bold text-slate-900 leading-none capitalize">{authUser?.username?.toLowerCase().replace(/_/g, ' ')}</p>
+                    <p className="text-[10px] font-black text-slate-400 mt-1 uppercase">{authUser?.role}</p>
+                  </div>
+                  <button onClick={() => { if (confirm('Exit Session?')) logout(); }} title="Logout" aria-label="Logout" className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center hover:bg-rose-600 transition-all shadow-lg hover:shadow-rose-100">
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </>
+              ) : (
+                <button onClick={() => setActiveView('LOGIN')} className="px-6 py-2.5 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-blue-600 transition-all shadow-lg hover:shadow-blue-200">
+                  Admin Login
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -446,7 +459,7 @@ const App: React.FC = () => {
                 <button onClick={handleExportCSV} className="h-12 px-6 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-700 shadow-xl shadow-indigo-100 flex items-center gap-2 transition-all">
                   <FileSpreadsheet className="w-4 h-4" /> Export CSV
                 </button>
-                <button onClick={() => setEditingUser({ id: 0, name_surname: '', extension_number: '', department: (depts[0]?.name || 'IT'), section: '', station: '', ip_address: '', mac_address: '', phone_model: '', designation: '', office_number: '', role: 'user' })} className="h-12 px-6 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-blue-700 shadow-xl shadow-blue-100 flex items-center gap-2 transition-all">
+                <button onClick={() => setEditingUser({ id: 0, name_surname: '', email: '', extension_number: '', department: (depts[0]?.name || 'IT'), section: '', station: '', ip_address: '', mac_address: '', phone_model: '', designation: '', office_number: '', role: 'user' })} className="h-12 px-6 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-blue-700 shadow-xl shadow-blue-100 flex items-center gap-2 transition-all">
                   <Plus className="w-4 h-4" /> New Hardware
                 </button>
               </div>
@@ -485,6 +498,7 @@ const App: React.FC = () => {
                 <thead className="bg-slate-50 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-100">
                   <tr>
                     <TableHeader k="name_surname" label="User Identity" />
+                    <TableHeader k="email" label="Email" />
                     <th className="px-6 py-4">Designation</th>
                     <TableHeader k="department" label="Department" />
                     <th className="px-6 py-4">Office Number</th>
@@ -497,6 +511,7 @@ const App: React.FC = () => {
                   {paginatedUsers.map((u: any) => (
                     <tr key={u.id} className="hover:bg-blue-50/20 transition-all">
                       <td className="px-6 py-6 font-black text-slate-900 group">{u.name_surname}</td>
+                      <td className="px-6 py-6 font-bold text-slate-500">{u.email || 'N/A'}</td>
                       <td className="px-6 py-6 text-xs font-bold text-slate-600 italic">{u.designation || 'N/A'}</td>
                       <td className="px-6 py-6 text-xs font-black text-slate-500 uppercase">{u.department}</td>
                       <td className="px-6 py-6 text-xs font-bold text-slate-600">{u.office_number || 'N/A'}</td>
@@ -628,7 +643,8 @@ const App: React.FC = () => {
                         </td>
                         <td className="px-8 py-6">
                           <p className="font-black text-slate-900 uppercase">{u.name_surname}</p>
-                          <p className="text-[10px] font-black text-slate-400">{u.department}</p>
+                          <p className="text-[10px] font-black text-slate-400">{u.email}</p>
+                          <p className="text-[10px] font-black text-slate-400 mt-1">{u.department}</p>
                         </td>
                         <td className="px-8 py-6 font-black text-blue-600">{u.extension_number}</td>
                         <td className="px-8 py-6 font-black font-mono text-xs text-slate-400">{u.ip_address}</td>
@@ -822,6 +838,14 @@ const App: React.FC = () => {
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Staff Member</label>
                   <input required placeholder="Identity Name" className="input-field" value={editingUser.name_surname || ''} onChange={e => setEditingUser({ ...editingUser, name_surname: e.target.value })} />
                 </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
+                  <input required type="email" placeholder="user@bcc.co.zw" className="input-field"
+                    value={editingUser.email || ''}
+                    onChange={e => setEditingUser({ ...editingUser, email: e.target.value })} />
+                </div>
+
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Extension Code</label>
                   <input placeholder="8000" className="input-field font-black text-blue-600" value={editingUser.extension_number || ''} onChange={e => setEditingUser({ ...editingUser, extension_number: e.target.value })} />
