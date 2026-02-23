@@ -15,12 +15,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [user, setUser] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
 
+    const normalizeUser = (payload: any) => {
+        if (!payload) return null;
+        const base = payload.user || payload;
+        return {
+            ...base,
+            role: payload.role || base.role || 'user'
+        };
+    };
+
     useEffect(() => {
         // Check for persisted session in sessionStorage (expires when tab/browser closes)
         const savedUser = sessionStorage.getItem('sentinel_user');
         if (savedUser) {
             try {
-                const userData = JSON.parse(savedUser);
+                const userData = normalizeUser(JSON.parse(savedUser));
                 setUser(userData);
                 // Connect Socket.io on page load if user is authenticated
                 socketService.connect(userData.username, userData.department, userData.role);
@@ -32,10 +41,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, []);
 
     const login = (userData: any) => {
-        setUser(userData);
-        sessionStorage.setItem('sentinel_user', JSON.stringify(userData));
+        const normalizedUser = normalizeUser(userData);
+        setUser(normalizedUser);
+        sessionStorage.setItem('sentinel_user', JSON.stringify(normalizedUser));
         // Connect Socket.io on login
-        socketService.connect(userData.username, userData.department, userData.role);
+        socketService.connect(normalizedUser.username, normalizedUser.department, normalizedUser.role);
     };
 
     const logout = () => {

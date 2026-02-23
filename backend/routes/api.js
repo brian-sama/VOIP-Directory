@@ -13,7 +13,6 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 // --- AUTH ROUTES ---
-const { generateToken } = require('../middleware/auth');
 
 // @route   POST api/auth/login
 router.post('/auth/login', async (req, res) => {
@@ -34,17 +33,10 @@ router.post('/auth/login', async (req, res) => {
 
         if (adminRows.length > 0 && password === adminRows[0].password) {
             const user = { id: adminRows[0].id, username: adminRows[0].username, role: 'admin' };
-            const token = generateToken(user);
-
-            res.cookie('token', token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'lax',
-                maxAge: 7 * 24 * 60 * 60 * 1000
-            });
+            res.clearCookie('token');
 
             console.log(`[AUTH] Admin login successful for ${username} in ${Date.now() - startTime}ms`);
-            return res.json({ msg: 'Login successful', role: 'admin', user, token });
+            return res.json({ msg: 'Login successful', role: 'admin', user, token: null });
         }
 
         // 2. Check Users Table with optimized query
@@ -69,17 +61,10 @@ router.post('/auth/login', async (req, res) => {
                 section: matchedUser.section,
                 role: matchedUser.role || 'user'
             };
-            const token = generateToken(user);
-
-            res.cookie('token', token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'lax',
-                maxAge: 7 * 24 * 60 * 60 * 1000
-            });
+            res.clearCookie('token');
 
             console.log(`[AUTH] User login successful for ${username} in ${Date.now() - startTime}ms`);
-            return res.json({ msg: 'Login successful', role: user.role, user, token });
+            return res.json({ msg: 'Login successful', role: user.role, user, token: null });
         }
 
         console.log(`[AUTH] Invalid credentials for ${username} after ${Date.now() - startTime}ms`);
