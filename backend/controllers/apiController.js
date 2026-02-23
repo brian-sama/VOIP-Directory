@@ -128,6 +128,7 @@ exports.importUsers = async (req, res) => {
 
             validUsers.push({
                 name,
+                email: (row['Email'] || row['email'] || '').trim(),
                 ext,
                 dept: row['Department'] || row['department'] || 'General',
                 sect: row['Section'] || row['section'] || 'General',
@@ -149,11 +150,11 @@ exports.importUsers = async (req, res) => {
             try {
                 // Batch insert users with automated usernames (first initial + surname)
                 const userValues = batch.map(u => [
-                    u.name, generateUsername(u.name), u.ext || '123456', u.dept, u.sect, u.office, u.designation, u.station, 'user'
+                    u.name, u.email || `${generateUsername(u.name)}@bcc.local`, generateUsername(u.name), u.ext || '123456', u.dept, u.sect, u.office, u.designation, u.station, 'user'
                 ]);
 
                 const [userResult] = await connection.query(
-                    'INSERT INTO users (name_surname, username, password, department, section, office_number, designation, station, role) VALUES ?',
+                    'INSERT INTO users (name_surname, email, username, password, department, section, office_number, designation, station, role) VALUES ?',
                     [userValues]
                 );
 

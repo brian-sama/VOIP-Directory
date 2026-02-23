@@ -13,6 +13,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 // --- AUTH ROUTES ---
+const { generateToken, verifyToken, requireAdmin } = require('../middleware/auth');
 
 // @route   POST api/auth/login
 router.post('/auth/login', async (req, res) => {
@@ -21,7 +22,7 @@ router.post('/auth/login', async (req, res) => {
     console.log(`[AUTH] Login attempt for: ${username} at ${new Date().toISOString()}`);
 
     if (!username || !password) return res.status(400).json({ msg: 'Please enter all fields' });
-    
+
     try {
         // Normalize input for comparison
         const normalizedInput = generateUsername(username);
@@ -77,10 +78,11 @@ router.post('/auth/login', async (req, res) => {
 
 // --- USER ROUTES ---
 // @route   POST api/users
-router.post('/users', async (req, res) => {
-    let { name_surname, department, section, office_number, designation, station, extension_number, ip_address, mac_address, phone_model, role } = req.body;
+router.post('/users', verifyToken, requireAdmin, async (req, res) => {
+    let { name_surname, email, department, section, office_number, designation, station, extension_number, ip_address, mac_address, phone_model, role } = req.body;
 
     if (!name_surname) return res.status(400).json({ msg: 'Please provide name & surname.' });
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ msg: 'Please provide a valid email address.' });
 
     // Automatically generate username: first initial + surname
     const username = generateUsername(name_surname);
@@ -109,8 +111,8 @@ router.post('/users', async (req, res) => {
         }
         const password = extension_number || '1234';
         const [userResult] = await db.query(
-            'INSERT INTO users (name_surname, username, password, department, section, office_number, designation, station, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [name_surname, username, password, department, section, office_number, designation, station, role || 'user']
+            'INSERT INTO users (name_surname, email, username, password, department, section, office_number, designation, station, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [name_surname, email, username, password, department, section, office_number, designation, station, role || 'user']
         );
         await db.query(
             'INSERT INTO extensions (user_id, extension_number, ip_address, mac_address, phone_model) VALUES (?, ?, ?, ?, ?)',
@@ -126,15 +128,32 @@ router.post('/users', async (req, res) => {
 // @route   GET api/users
 router.get('/users', async (req, res) => {
     try {
-        const { department, user, extension } = req.query;
-        let query = `SELECT u.*, e.extension_number, e.ip_address, e.mac_address, e.phone_model, e.status, e.last_seen, e.sip_status FROM users u LEFT JOIN extensions e ON u.id = e.user_id WHERE 1=1`;
+        const { department, user, extension, page, limit } = req.query;
+        let baseQuery = `FROM users u LEFT JOIN extensions e ON u.id = e.user_id WHERE 1=1`;
         const params = [];
-        if (department) { query += ` AND u.department LIKE ?`; params.push(`%${department}%`); }
-        if (user) { query += ` AND u.name_surname LIKE ?`; params.push(`%${user}%`); }
-        if (extension) { query += ` AND e.extension_number LIKE ?`; params.push(`%${extension}%`); }
-        query += ` ORDER BY u.name_surname`;
-        const [rows] = await db.query(query, params);
-        res.json(rows);
+
+        if (department) { baseQuery += ` AND u.department LIKE ?`; params.push(`%${department}%`); }
+        if (user) {
+            baseQuery += ` AND (u.name_surname LIKE ? OR u.username LIKE ? OR u.email LIKE ?)`;
+            params.push(`%${user}%`, `%${user}%`, `%${user}%`);
+        }
+        if (extension) { baseQuery += ` AND e.extension_number LIKE ?`; params.push(`%${extension}%`); }
+
+        if (page && limit) {
+            const pageNum = parseInt(page);
+            const limitNum = parseInt(limit);
+            const offset = (pageNum - 1) * limitNum;
+
+            const [countResult] = await db.query(`SELECT COUNT(*) as total ${baseQuery}`, params);
+            const total = countResult[0].total;
+
+            const [rows] = await db.query(`SELECT u.*, e.extension_number, e.ip_address, e.mac_address, e.phone_model, e.status, e.last_seen, e.sip_status ${baseQuery} ORDER BY u.name_surname LIMIT ? OFFSET ?`, [...params, limitNum, offset]);
+
+            res.json({ data: rows, total, page: pageNum, limit: limitNum });
+        } else {
+            const [rows] = await db.query(`SELECT u.*, e.extension_number, e.ip_address, e.mac_address, e.phone_model, e.status, e.last_seen, e.sip_status ${baseQuery} ORDER BY u.name_surname`, params);
+            res.json(rows);
+        }
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
@@ -142,11 +161,12 @@ router.get('/users', async (req, res) => {
 });
 
 // @route   PUT api/users/:id
-router.put('/users/:id', async (req, res) => {
-    let { name_surname, department, section, office_number, designation, station, extension_number, ip_address, mac_address, phone_model, role } = req.body;
+router.put('/users/:id', verifyToken, requireAdmin, async (req, res) => {
+    let { name_surname, email, department, section, office_number, designation, station, extension_number, ip_address, mac_address, phone_model, role } = req.body;
     const userId = req.params.id;
 
     if (!name_surname) return res.status(400).json({ msg: 'Please provide name & surname.' });
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ msg: 'Please provide a valid email address.' });
 
     // Sanitize empty strings to null
     const toNull = (val) => (val === null || val === undefined || (typeof val === 'string' && val.trim() === '')) ? null : (typeof val === 'string' ? val.trim() : val);
@@ -180,8 +200,8 @@ router.put('/users/:id', async (req, res) => {
             }
         }
         await db.query(
-            'UPDATE users SET name_surname = ?, username = ?, department = ?, section = ?, office_number = ?, designation = ?, station = ?, role = ? WHERE id = ?',
-            [name_surname, username, department, section, office_number, designation, station, role || 'user', userId]
+            'UPDATE users SET name_surname = ?, email = ?, username = ?, department = ?, section = ?, office_number = ?, designation = ?, station = ?, role = ? WHERE id = ?',
+            [name_surname, email, username, department, section, office_number, designation, station, role || 'user', userId]
         );
         const [extResult] = await db.query(
             'UPDATE extensions SET extension_number = ?, ip_address = ?, mac_address = ?, phone_model = ? WHERE user_id = ?',
@@ -205,7 +225,7 @@ router.put('/users/:id', async (req, res) => {
 });
 
 // @route   DELETE api/users/:id
-router.delete('/users/:id', async (req, res) => {
+router.delete('/users/:id', verifyToken, requireAdmin, async (req, res) => {
     try {
         const [result] = await db.query('DELETE FROM users WHERE id = ?', [req.params.id]);
         if (result.affectedRows === 0) return res.status(404).json({ msg: 'User not found.' });
@@ -217,7 +237,7 @@ router.delete('/users/:id', async (req, res) => {
 });
 
 // @route   POST api/users/bulk-delete
-router.post('/users/bulk-delete', async (req, res) => {
+router.post('/users/bulk-delete', verifyToken, requireAdmin, async (req, res) => {
     const { ids } = req.body;
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
         return res.status(400).json({ msg: 'Please provide user IDs for deletion.' });
@@ -238,7 +258,7 @@ router.post('/users/bulk-delete', async (req, res) => {
 });
 
 // @route   POST api/users/cleanup
-router.post('/users/cleanup', async (req, res) => {
+router.post('/users/cleanup', verifyToken, requireAdmin, async (req, res) => {
     try {
         const stats = await runDirectoryCleanup();
         res.json({ msg: `Cleanup successful. Removed ${stats.removedCount} duplicates and merged ${stats.mergedExtensions} extensions.`, ...stats });
@@ -249,12 +269,12 @@ router.post('/users/cleanup', async (req, res) => {
 });
 
 // --- METADATA ROUTES ---
-router.get('/metadata/:type', apiController.getMetadata);
-router.post('/metadata/:type', apiController.addMetadata);
-router.delete('/metadata/:type/:id', apiController.deleteMetadata);
+router.get('/metadata/:type', verifyToken, requireAdmin, apiController.getMetadata);
+router.post('/metadata/:type', verifyToken, requireAdmin, apiController.addMetadata);
+router.delete('/metadata/:type/:id', verifyToken, requireAdmin, apiController.deleteMetadata);
 
 // --- ACTIVITY ROUTES ---
-router.get('/activity', async (req, res) => {
+router.get('/activity', verifyToken, requireAdmin, async (req, res) => {
     try {
         const [logs] = await db.query('SELECT * FROM activity_logs ORDER BY created_at DESC LIMIT 100');
         res.json(logs);
@@ -264,7 +284,7 @@ router.get('/activity', async (req, res) => {
     }
 });
 
-router.post('/activity', async (req, res) => {
+router.post('/activity', verifyToken, requireAdmin, async (req, res) => {
     const { action, details, user_name } = req.body;
     if (!action) return res.status(400).json({ msg: 'Action is required' });
     try {
@@ -277,10 +297,10 @@ router.post('/activity', async (req, res) => {
 });
 
 // --- IMPORT ROUTES ---
-router.post('/import/users', upload.single('file'), apiController.importUsers);
+router.post('/import/users', verifyToken, requireAdmin, upload.single('file'), apiController.importUsers);
 
 // --- REPORT ROUTES ---
-router.get('/reports/daily', async (req, res) => {
+router.get('/reports/daily', verifyToken, requireAdmin, async (req, res) => {
     const { format = 'json', date } = req.query;
     if (!date) return res.status(400).json({ msg: 'Date parameter is required' });
     try {
@@ -296,7 +316,7 @@ router.get('/reports/daily', async (req, res) => {
     } catch (err) { console.error(err.message); res.status(500).send('Server Error'); }
 });
 
-router.get('/reports/range', async (req, res) => {
+router.get('/reports/range', verifyToken, requireAdmin, async (req, res) => {
     const { format = 'json', startDate, endDate } = req.query;
     if (!startDate || !endDate) return res.status(400).json({ msg: 'Dates are required' });
     try {

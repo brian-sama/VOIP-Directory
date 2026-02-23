@@ -12,6 +12,7 @@ export enum DeviceStatus {
 export interface VoipUser {
     id: number;
     name_surname: string;
+  email: string;
     extension_number: string;
     department: string;
     section: string;

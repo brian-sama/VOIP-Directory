@@ -1,7 +1,7 @@
 -- Create the database if it doesn't exist
-CREATE DATABASE IF NOT EXISTS bcc_voip_directory;
+CREATE DATABASE IF NOT EXISTS bcc_directory;
 -- Use the created database
-USE bcc_voip_directory;
+USE bcc_directory;
 -- Admins Table
 CREATE TABLE IF NOT EXISTS admins (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS admins (
 CREATE TABLE IF NOT EXISTS users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name_surname VARCHAR(100) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
   username VARCHAR(100),
   password VARCHAR(255),
   department VARCHAR(100),
@@ -23,7 +24,9 @@ CREATE TABLE IF NOT EXISTS users (
   role ENUM('admin', 'user') DEFAULT 'user',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_users_username (username),
-  INDEX idx_users_name_surname (name_surname)
+  INDEX idx_users_name_surname (name_surname),
+  INDEX idx_users_email (email),
+  INDEX idx_users_department (department)
 );
 -- Extensions Table
 CREATE TABLE IF NOT EXISTS extensions (

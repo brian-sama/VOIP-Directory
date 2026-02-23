@@ -8,6 +8,7 @@ const UserEditModal = ({ show, handleClose, handleSubmit, user }) => {
     const [stations, setStations] = useState([]);
     const [formData, setFormData] = useState({
         name_surname: '',
+        email: '',
         department: '',
         section: '',
         office_number: '',
@@ -46,6 +47,7 @@ const UserEditModal = ({ show, handleClose, handleSubmit, user }) => {
         if (user) {
             setFormData({
                 name_surname: user.name_surname || '',
+                email: user.email || '',
                 department: user.department || '',
                 section: user.section || '',
                 office_number: user.office_number || '',
@@ -62,7 +64,7 @@ const UserEditModal = ({ show, handleClose, handleSubmit, user }) => {
             setCustomStation(user.station && !stations.includes(user.station));
         } else {
             setFormData({
-                name_surname: '', department: '', section: '', office_number: '', designation: '', station: '',
+                name_surname: '', email: '', department: '', section: '', office_number: '', designation: '', station: '',
                 extension_number: '', ip_address: '', mac_address: '', phone_model: '', role: 'user',
             });
             setCustomDepartment(false);
@@ -122,6 +124,11 @@ const UserEditModal = ({ show, handleClose, handleSubmit, user }) => {
                     <Form.Group className="mb-3">
                         <Form.Label>Name & Surname</Form.Label>
                         <Form.Control type="text" name="name_surname" value={formData.name_surname} onChange={handleChange} required />
+                    </Form.Group>
+
+                    <Form.Group className="mb-3">
+                        <Form.Label>Email</Form.Label>
+                        <Form.Control type="email" name="email" value={formData.email} onChange={handleChange} required />
                     </Form.Group>
 
                     <Form.Group className="mb-3">
