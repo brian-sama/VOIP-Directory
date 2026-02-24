@@ -1,7 +1,6 @@
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
-const cookieParser = require('cookie-parser');
 const os = require('os');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -55,7 +54,6 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
-app.use(cookieParser());
 
 // Security Middleware
 app.use(helmet());

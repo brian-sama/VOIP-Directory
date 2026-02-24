@@ -13,7 +13,6 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 // --- AUTH ROUTES ---
-const { generateToken, verifyToken, requireAdmin } = require('../middleware/auth');
 
 // @route   POST api/auth/login
 router.post('/auth/login', async (req, res) => {
@@ -34,10 +33,9 @@ router.post('/auth/login', async (req, res) => {
 
         if (adminRows.length > 0 && password === adminRows[0].password) {
             const user = { id: adminRows[0].id, username: adminRows[0].username, role: 'admin' };
-            res.clearCookie('token');
 
             console.log(`[AUTH] Admin login successful for ${username} in ${Date.now() - startTime}ms`);
-            return res.json({ msg: 'Login successful', role: 'admin', user, token: null });
+            return res.json({ msg: 'Login successful', role: 'admin', user });
         }
 
         // 2. Check Users Table with optimized query
@@ -62,10 +60,9 @@ router.post('/auth/login', async (req, res) => {
                 section: matchedUser.section,
                 role: matchedUser.role || 'user'
             };
-            res.clearCookie('token');
 
             console.log(`[AUTH] User login successful for ${username} in ${Date.now() - startTime}ms`);
-            return res.json({ msg: 'Login successful', role: user.role, user, token: null });
+            return res.json({ msg: 'Login successful', role: user.role, user });
         }
 
         console.log(`[AUTH] Invalid credentials for ${username} after ${Date.now() - startTime}ms`);
@@ -78,7 +75,7 @@ router.post('/auth/login', async (req, res) => {
 
 // --- USER ROUTES ---
 // @route   POST api/users
-router.post('/users', verifyToken, requireAdmin, async (req, res) => {
+router.post('/users', async (req, res) => {
     let { name_surname, email, department, section, office_number, designation, station, extension_number, ip_address, mac_address, phone_model, role } = req.body;
 
     if (!name_surname) return res.status(400).json({ msg: 'Please provide name & surname.' });
@@ -161,7 +158,7 @@ router.get('/users', async (req, res) => {
 });
 
 // @route   PUT api/users/:id
-router.put('/users/:id', verifyToken, requireAdmin, async (req, res) => {
+router.put('/users/:id', async (req, res) => {
     let { name_surname, email, department, section, office_number, designation, station, extension_number, ip_address, mac_address, phone_model, role } = req.body;
     const userId = req.params.id;
 
@@ -225,7 +222,7 @@ router.put('/users/:id', verifyToken, requireAdmin, async (req, res) => {
 });
 
 // @route   DELETE api/users/:id
-router.delete('/users/:id', verifyToken, requireAdmin, async (req, res) => {
+router.delete('/users/:id', async (req, res) => {
     try {
         const [result] = await db.query('DELETE FROM users WHERE id = ?', [req.params.id]);
         if (result.affectedRows === 0) return res.status(404).json({ msg: 'User not found.' });
@@ -237,7 +234,7 @@ router.delete('/users/:id', verifyToken, requireAdmin, async (req, res) => {
 });
 
 // @route   POST api/users/bulk-delete
-router.post('/users/bulk-delete', verifyToken, requireAdmin, async (req, res) => {
+router.post('/users/bulk-delete', async (req, res) => {
     const { ids } = req.body;
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
         return res.status(400).json({ msg: 'Please provide user IDs for deletion.' });
@@ -258,7 +255,7 @@ router.post('/users/bulk-delete', verifyToken, requireAdmin, async (req, res) =>
 });
 
 // @route   POST api/users/cleanup
-router.post('/users/cleanup', verifyToken, requireAdmin, async (req, res) => {
+router.post('/users/cleanup', async (req, res) => {
     try {
         const stats = await runDirectoryCleanup();
         res.json({ msg: `Cleanup successful. Removed ${stats.removedCount} duplicates and merged ${stats.mergedExtensions} extensions.`, ...stats });
@@ -269,12 +266,12 @@ router.post('/users/cleanup', verifyToken, requireAdmin, async (req, res) => {
 });
 
 // --- METADATA ROUTES ---
-router.get('/metadata/:type', verifyToken, requireAdmin, apiController.getMetadata);
-router.post('/metadata/:type', verifyToken, requireAdmin, apiController.addMetadata);
-router.delete('/metadata/:type/:id', verifyToken, requireAdmin, apiController.deleteMetadata);
+router.get('/metadata/:type', apiController.getMetadata);
+router.post('/metadata/:type', apiController.addMetadata);
+router.delete('/metadata/:type/:id', apiController.deleteMetadata);
 
 // --- ACTIVITY ROUTES ---
-router.get('/activity', verifyToken, requireAdmin, async (req, res) => {
+router.get('/activity', async (req, res) => {
     try {
         const [logs] = await db.query('SELECT * FROM activity_logs ORDER BY created_at DESC LIMIT 100');
         res.json(logs);
@@ -284,7 +281,7 @@ router.get('/activity', verifyToken, requireAdmin, async (req, res) => {
     }
 });
 
-router.post('/activity', verifyToken, requireAdmin, async (req, res) => {
+router.post('/activity', async (req, res) => {
     const { action, details, user_name } = req.body;
     if (!action) return res.status(400).json({ msg: 'Action is required' });
     try {
@@ -297,10 +294,10 @@ router.post('/activity', verifyToken, requireAdmin, async (req, res) => {
 });
 
 // --- IMPORT ROUTES ---
-router.post('/import/users', verifyToken, requireAdmin, upload.single('file'), apiController.importUsers);
+router.post('/import/users', upload.single('file'), apiController.importUsers);
 
 // --- REPORT ROUTES ---
-router.get('/reports/daily', verifyToken, requireAdmin, async (req, res) => {
+router.get('/reports/daily', async (req, res) => {
     const { format = 'json', date } = req.query;
     if (!date) return res.status(400).json({ msg: 'Date parameter is required' });
     try {
@@ -316,7 +313,7 @@ router.get('/reports/daily', verifyToken, requireAdmin, async (req, res) => {
     } catch (err) { console.error(err.message); res.status(500).send('Server Error'); }
 });
 
-router.get('/reports/range', verifyToken, requireAdmin, async (req, res) => {
+router.get('/reports/range', async (req, res) => {
     const { format = 'json', startDate, endDate } = req.query;
     if (!startDate || !endDate) return res.status(400).json({ msg: 'Dates are required' });
     try {
