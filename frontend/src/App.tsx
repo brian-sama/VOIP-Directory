@@ -48,6 +48,9 @@ const App: React.FC = () => {
   const [activeView, setActiveView] = useState<View>('DIRECTORY');
 
   const stripPunctuation = (str: string) => str.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+  const ALL_DEPARTMENTS = 'ALL';
+  const NO_DEPARTMENT = '__NO_DEPARTMENT__';
+  const normalizeDepartment = (value: any) => (value ?? '').toString().trim();
 
   const [users, setUsers] = useState<any[]>([]);
   const [logs, setLogs] = useState<ActivityLog[]>([]);
@@ -59,6 +62,7 @@ const App: React.FC = () => {
   }, [liveMode]);
   const [searchQuery, setSearchQuery] = useState('');
   const [adminSearchQuery, setAdminSearchQuery] = useState('');
+  const [adminFilterDept, setAdminFilterDept] = useState(ALL_DEPARTMENTS);
   const [editingUser, setEditingUser] = useState<any>(null);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -158,6 +162,7 @@ const App: React.FC = () => {
       // Clear search queries when user logs out to isolate search state
       setSearchQuery('');
       setAdminSearchQuery('');
+      setAdminFilterDept(ALL_DEPARTMENTS);
       setActiveView('DIRECTORY');
     }
   }, [isAuthenticated, isAdmin]);
@@ -166,6 +171,7 @@ const App: React.FC = () => {
   useEffect(() => {
     setSearchQuery('');
     setAdminSearchQuery('');
+    setAdminFilterDept(ALL_DEPARTMENTS);
   }, [authUser?.username]);
 
   const stats: SystemStats = useMemo(() => {
@@ -249,8 +255,27 @@ const App: React.FC = () => {
     };
   };
 
+  const managementDeptOptions = useMemo(() => {
+    const deduped = new Map<string, string>();
+
+    const addOption = (value: any) => {
+      const normalized = normalizeDepartment(value);
+      if (!normalized) return;
+      const key = normalized.toLowerCase();
+      if (!deduped.has(key)) deduped.set(key, normalized);
+    };
+
+    depts.forEach((d: any) => addOption(d?.name));
+    users.forEach((u: any) => addOption(u?.department));
+
+    return Array.from(deduped.values()).sort((a, b) =>
+      a.localeCompare(b, undefined, { sensitivity: 'base' })
+    );
+  }, [depts, users]);
+
   const processedAdminUsers = useMemo(() => {
     let result = [...users];
+
     if (adminSearchQuery) {
       const strippedAdminQuery = stripPunctuation(adminSearchQuery);
       result = result.filter((u: any) =>
@@ -260,8 +285,26 @@ const App: React.FC = () => {
         stripPunctuation(u.ip_address || '').includes(strippedAdminQuery)
       );
     }
+
+    if (adminFilterDept === NO_DEPARTMENT) {
+      result = result.filter((u: any) => !normalizeDepartment(u.department));
+    } else if (adminFilterDept !== ALL_DEPARTMENTS) {
+      result = result.filter((u: any) => normalizeDepartment(u.department) === adminFilterDept);
+    }
+
     return result;
-  }, [users, adminSearchQuery]);
+  }, [users, adminSearchQuery, adminFilterDept]);
+
+  useEffect(() => {
+    const visibleIds = new Set(processedAdminUsers.map((u: any) => u.id));
+    setSelectedIds(prev => {
+      const next = prev.filter(id => visibleIds.has(id));
+      if (next.length === prev.length && next.every((id, index) => id === prev[index])) {
+        return prev;
+      }
+      return next;
+    });
+  }, [processedAdminUsers]);
 
   const handleBulkDelete = async () => {
     if (selectedIds.length === 0) return;
@@ -599,9 +642,26 @@ const App: React.FC = () => {
             <div className="card shadow-xl shadow-slate-200/40 border-none">
               <div className="p-8 border-b border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6 bg-slate-50/30">
                 <h3 className="font-black text-slate-900 uppercase tracking-widest text-xs">Managed Devices</h3>
-                <div className="relative flex-1 max-w-md">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <input type="text" placeholder="Search Managed Units..." className="w-full h-12 bg-white border border-slate-200 rounded-xl pl-12 pr-6 text-xs font-bold outline-none focus:ring-4 focus:ring-blue-50 transition-all" value={adminSearchQuery} onChange={e => { setAdminSearchQuery(e.target.value); setCurrentPage(1); }} />
+                <div className="w-full md:w-auto md:flex-1 md:max-w-2xl flex flex-col sm:flex-row gap-3">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input type="text" placeholder="Search Managed Units..." className="w-full h-12 bg-white border border-slate-200 rounded-xl pl-12 pr-6 text-xs font-bold outline-none focus:ring-4 focus:ring-blue-50 transition-all" value={adminSearchQuery} onChange={e => { setAdminSearchQuery(e.target.value); setCurrentPage(1); }} />
+                  </div>
+                  <select
+                    title="Filter by Department"
+                    className="h-12 bg-white border border-slate-200 rounded-xl px-4 text-xs font-bold outline-none focus:ring-4 focus:ring-blue-50 transition-all min-w-[220px]"
+                    value={adminFilterDept}
+                    onChange={e => {
+                      setAdminFilterDept(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <option value={ALL_DEPARTMENTS}>All Departments</option>
+                    {managementDeptOptions.map((dept) => (
+                      <option key={dept} value={dept}>{dept}</option>
+                    ))}
+                    <option value={NO_DEPARTMENT}>No Department</option>
+                  </select>
                 </div>
               </div>
               <div className="overflow-x-auto">
