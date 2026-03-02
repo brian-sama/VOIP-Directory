@@ -1,4 +1,4 @@
-# VOIP Directory Setup Guide
+# CoB Internal Directory Setup Guide
 
 ## Prerequisites
 
@@ -70,13 +70,16 @@ node create-activity-table.js
 Open two terminals:
 
 **Terminal 1 - Backend:**
+
 ```bash
 cd backend
 npm start
 ```
+
 You should see: `Server running on port 5001`
 
 **Terminal 2 - Frontend:**
+
 ```bash
 cd frontend
 npm run dev
@@ -121,7 +124,8 @@ npm run dev
 ### Testing Backend Connection
 
 Open a browser and navigate to:
-```
+
+```bash
 http://localhost:5001/api/users
 ```
 

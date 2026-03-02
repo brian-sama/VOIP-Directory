@@ -75,7 +75,7 @@ artillery quick --count 1000 --num 5 http://localhost:5001/api/users
 ## System Requirements for 1000 Users
 
 | Resource | Minimum | Recommended |
-|----------|---------|-------------|
+| --- | --- | --- |
 | RAM | 4GB | 8GB |
 | CPU Cores | 4 | 8 |
 | MySQL | Separate server | Managed DB (RDS, PlanetScale) |
@@ -84,7 +84,7 @@ artillery quick --count 1000 --num 5 http://localhost:5001/api/users
 
 Create `.env` in backend folder:
 
-```
+```env
 DB_HOST=localhost
 DB_USER=root
 DB_PASSWORD=your_password

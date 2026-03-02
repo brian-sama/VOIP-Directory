@@ -1,7 +1,7 @@
 {
   "name": "bcc-directory-backend",
   "version": "1.0.0",
-  "description": "Backend for BCC Directory and Extension Monitoring System",
+  "description": "Backend for BCC Directory & Extension Monitoring System",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

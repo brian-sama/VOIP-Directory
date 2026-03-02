@@ -44,9 +44,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBack }) => {
                         </button>
                     )}
                     <div className="inline-flex items-center justify-center mb-6">
-                        <img src={logo} alt="BCC Logo" className="w-24 h-24 object-contain" />
+                        <img src={logo} alt="CoB Logo" className="w-24 h-24 object-contain" />
                     </div>
-                    <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">BCC DIRECTORY</h1>
+                    <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">CoB INTERNAL DIRECTORY</h1>
                     <p className="text-slate-500 mt-2 font-medium">Monitoring & Communications Hub</p>
                 </div>
 

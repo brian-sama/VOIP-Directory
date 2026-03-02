@@ -74,7 +74,7 @@ app.use('/api', require('./routes/api'));
 const { startServices } = require('./services');
 
 app.get('/', (req, res) => {
-  res.send('BCC DIRECTORY Backend is running...');
+  res.send('CoB INTERNAL DIRECTORY Backend is running...');
 });
 
 // Global Error Handler

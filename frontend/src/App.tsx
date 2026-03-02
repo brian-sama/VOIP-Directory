@@ -383,7 +383,7 @@ const App: React.FC = () => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `BCC_DIRECTORY_Export_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `CoB_INTERNAL_DIRECTORY_Export_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     success("Directory exported to CSV.");
   };
@@ -431,8 +431,8 @@ const App: React.FC = () => {
       <nav className="sticky top-0 z-40 bg-white border-b border-slate-200 px-6 h-20">
         <div className="max-w-7xl mx-auto h-full flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={logo} alt="BCC" className="w-10 h-10 object-contain" />
-            <h1 className="text-xl font-black text-slate-900 tracking-tight hidden lg:block">BCC DIRECTORY</h1>
+            <img src={logo} alt="CoB" className="w-10 h-10 object-contain" />
+            <h1 className="text-xl font-black text-slate-900 tracking-tight hidden lg:block">CoB INTERNAL DIRECTORY</h1>
           </div>
 
           <div className="flex items-center gap-4">
@@ -474,7 +474,7 @@ const App: React.FC = () => {
       <main className="flex-1 max-w-7xl mx-auto w-full p-6 md:p-8">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
           <div>
-            <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">{activeView === 'DIRECTORY' ? 'Directory' : activeView === 'DASHBOARD' ? 'Overview' : activeView === 'ADMIN' ? 'Management' : activeView === 'REPORTS' ? 'Reports' : 'Activity Logs'}</h2>
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">{activeView === 'DIRECTORY' ? 'CoB Internal Directory' : activeView === 'DASHBOARD' ? 'Overview' : activeView === 'ADMIN' ? 'Management' : activeView === 'REPORTS' ? 'Reports' : 'Activity Logs'}</h2>
             {isAdmin && (
               <div className="flex items-center gap-4 mt-2">
                 <button onClick={() => setLiveMode(!liveMode)} title="Toggle Live Monitoring" className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${liveMode ? 'bg-emerald-100 text-emerald-700 ring-2 ring-emerald-50' : 'bg-slate-100 text-slate-500'}`}>
@@ -515,7 +515,7 @@ const App: React.FC = () => {
             <div className={`p-8 border-b border-slate-100 flex flex-col ${isAdmin ? 'xl:flex-row gap-6' : ''}`}>
               <div className={`relative ${isAdmin ? 'flex-1' : 'max-w-2xl mx-auto w-full'}`}>
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <input type="text" placeholder="Search Master Directory..." className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl pl-14 pr-6 text-sm font-bold outline-none focus:ring-4 focus:ring-blue-100 transition-all" value={searchQuery} onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }} />
+                <input type="text" placeholder="Search CoB Internal Directory..." className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl pl-14 pr-6 text-sm font-bold outline-none focus:ring-4 focus:ring-blue-100 transition-all" value={searchQuery} onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }} />
               </div>
               {isAdmin && (
                 <div className="flex gap-4 flex-wrap">

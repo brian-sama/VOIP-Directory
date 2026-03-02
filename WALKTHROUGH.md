@@ -1,12 +1,12 @@
-# VOIP Directory & Extension Monitoring System - Walkthrough
+# CoB Internal Directory & Extension Monitoring System - Walkthrough
 
-Welcome to the technical walkthrough of the **VOIP Directory**. This document provides an overview of the system's features, the technology stack, and how the core functionalities were implemented.
+Welcome to the technical walkthrough of the **CoB Internal Directory**. This document provides an overview of the system's features, the technology stack, and how the core functionalities were implemented.
 
 ---
 
 ## 1. Project Overview
 
-The VOIP Directory is a real-time monitoring and management system designed to track the status of IP phones across a network. It provides IT administrators with a centralized dashboard to see who is online, who is offline, and detailed logs of system activity.
+The **CoB Internal Directory** is a real-time monitoring and management system designed to track the status of IP phones across a network. It provides IT administrators with a centralized dashboard to see who is online, who is offline, and detailed logs of system activity.
 
 ## 2. Key Features
 
@@ -61,7 +61,7 @@ Replaced intrusive browser alerts with streamlined, premium "Toast" notification
 ### Frontend (Modern React)
 
 - **Framework**: Built with **React** and **Vite** for blazing-fast development and performance.
-- **Styling**: A custom design system using **Vanilla CSS**. No bulky frameworks like Tailwind were used, allowing for a lightweight and highly tailored "BCC Blue/Red" theme.
+- **Styling**: A custom design system using **Vanilla CSS**. No bulky frameworks like Tailwind were used, allowing for a lightweight and highly tailored "CoB Blue/Red" theme.
 - **State Management**: Uses **React Context API** (e.g., `ToastContext`) for global application states.
 - **HTTP Client**: **Axios** handles all communication with the backend.
 
@@ -101,4 +101,4 @@ The UI was recently refined to remove clutter:
 
 ## 5. Development Summary
 
-This project represents a full-stack solution focusing on **Reliability**, **Auditability**, and **User Experience**. By combining real-time background processing with a clean, modern frontend, the BCC VOIP Directory provides a robust tool for extension management.
+This project represents a full-stack solution focusing on **Reliability**, **Auditability**, and **User Experience**. By combining real-time background processing with a clean, modern frontend, the CoB Internal Directory provides a robust tool for extension management.

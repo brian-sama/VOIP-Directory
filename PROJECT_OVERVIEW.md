@@ -1,10 +1,10 @@
-# VOIP Directory & Extension Monitoring System
+# CoB Internal Directory & Extension Monitoring System
 
 ## Project Technical Documentation
 
 ### 1. Executive Summary
 
-The **VOIP Directory & Extension Monitoring System** is a robust, full-stack application designed to consolidate VOIP infrastructure management. It provides real-time status tracking for hardware, a searchable organizational directory, and automated administrative tools for data integrity and reporting.
+The **CoB Internal Directory & Extension Monitoring System** is a robust, full-stack application designed to consolidate VOIP infrastructure management. It provides real-time status tracking for hardware, a searchable organizational directory, and automated administrative tools for data integrity and reporting.
 
 ---
 

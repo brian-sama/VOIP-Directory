@@ -80,19 +80,21 @@ CREATE TABLE IF NOT EXISTS ping_logs (
   result ENUM('Success', 'Failed') NOT NULL,
   FOREIGN KEY (extension_id) REFERENCES extensions(id) ON DELETE CASCADE
 );
-
 -- --- Migration Helpers (safe to re-run) ---
 -- Ensure the email column exists for older deployments.
 SET @db = DATABASE();
 SELECT COUNT(*) INTO @email_col_exists
 FROM information_schema.columns
-WHERE table_schema = @db AND table_name = 'users' AND column_name = 'email';
-
-SET @sql = IF(@email_col_exists = 0,
-  'ALTER TABLE users ADD COLUMN email VARCHAR(255) NULL AFTER name_surname',
-  'SELECT 1'
-);
-PREPARE stmt FROM @sql;
+WHERE table_schema = @db
+  AND table_name = 'users'
+  AND column_name = 'email';
+SET @sql = IF(
+    @email_col_exists = 0,
+    'ALTER TABLE users ADD COLUMN email VARCHAR(255) NULL AFTER name_surname',
+    'SELECT 1'
+  );
+PREPARE stmt
+FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 -- Insert the default admin user

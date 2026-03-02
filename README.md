@@ -1,4 +1,4 @@
-# VOIP Directory & Extension Monitoring System
+# CoB Internal Directory & Extension Monitoring System
 
 A comprehensive web-based application designed to manage, directory, and monitor VOIP hardware and user extension status in real-time.
 
