@@ -128,7 +128,7 @@ const UserEditModal = ({ show, handleClose, handleSubmit, user }) => {
 
                     <Form.Group className="mb-3">
                         <Form.Label>Email</Form.Label>
-                        <Form.Control type="email" name="email" value={formData.email} onChange={handleChange} required />
+                        <Form.Control type="email" name="email" value={formData.email} onChange={handleChange} />
                     </Form.Group>
 
                     <Form.Group className="mb-3">

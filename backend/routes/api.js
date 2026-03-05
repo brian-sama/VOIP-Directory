@@ -79,7 +79,7 @@ router.post('/users', async (req, res) => {
     let { name_surname, email, department, section, office_number, designation, station, extension_number, ip_address, mac_address, phone_model, role } = req.body;
 
     if (!name_surname) return res.status(400).json({ msg: 'Please provide name & surname.' });
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ msg: 'Please provide a valid email address.' });
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ msg: 'Please provide a valid email address.' });
 
     // Automatically generate username: first initial + surname
     const username = generateUsername(name_surname);
@@ -96,6 +96,7 @@ router.post('/users', async (req, res) => {
     station = toNull(station);
     mac_address = toNull(mac_address);
     phone_model = toNull(phone_model);
+    email = toNull(email);
 
     try {
         if (ip_address) {
@@ -163,7 +164,7 @@ router.put('/users/:id', async (req, res) => {
     const userId = req.params.id;
 
     if (!name_surname) return res.status(400).json({ msg: 'Please provide name & surname.' });
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ msg: 'Please provide a valid email address.' });
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ msg: 'Please provide a valid email address.' });
 
     // Sanitize empty strings to null
     const toNull = (val) => (val === null || val === undefined || (typeof val === 'string' && val.trim() === '')) ? null : (typeof val === 'string' ? val.trim() : val);
@@ -177,6 +178,7 @@ router.put('/users/:id', async (req, res) => {
     station = toNull(station);
     mac_address = toNull(mac_address);
     phone_model = toNull(phone_model);
+    email = toNull(email);
 
     try {
         // Automatically update username when name changes for automation

@@ -901,7 +901,7 @@ const App: React.FC = () => {
 
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
-                  <input required type="email" placeholder="user@bcc.co.zw" className="input-field"
+                  <input type="email" placeholder="user@bcc.co.zw" className="input-field"
                     value={editingUser.email || ''}
                     onChange={e => setEditingUser({ ...editingUser, email: e.target.value })} />
                 </div>
