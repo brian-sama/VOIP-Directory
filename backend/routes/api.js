@@ -12,6 +12,58 @@ const xlsx = require('xlsx');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
+const DIRECTORY_AUDIT_FIELDS = [
+    'name_surname',
+    'email',
+    'department',
+    'section',
+    'station',
+    'office_number',
+    'designation',
+    'extension_number',
+    'old_extension_number',
+    'ip_address',
+    'mac_address',
+    'phone_model',
+    'role'
+];
+
+const toNull = (val) => {
+    if (val === null || val === undefined || (typeof val === 'string' && val.trim() === '')) return null;
+    return typeof val === 'string' ? val.trim() : val;
+};
+
+const normalizeAuditValue = (val) => (val === null || val === undefined) ? '' : String(val);
+
+const pickAuditFields = (user) => DIRECTORY_AUDIT_FIELDS.reduce((acc, field) => {
+    acc[field] = user?.[field] ?? null;
+    return acc;
+}, {});
+
+const diffAuditFields = (before, after) => DIRECTORY_AUDIT_FIELDS.reduce((acc, field) => {
+    const from = normalizeAuditValue(before?.[field]);
+    const to = normalizeAuditValue(after?.[field]);
+    if (from !== to) acc[field] = { from: before?.[field] ?? null, to: after?.[field] ?? null };
+    return acc;
+}, {});
+
+const getAuditUser = (req) => req.body?.audit_user || req.body?.updated_by || req.body?.created_by || req.query?.audit_user || 'Admin';
+
+async function recordActivity(action, details, userName = 'System') {
+    await db.query(
+        'INSERT INTO activity_logs (action, details, user_name) VALUES (?, ?, ?)',
+        [action, typeof details === 'string' ? details : JSON.stringify(details), userName]
+    );
+}
+
+async function getUserSnapshot(userId) {
+    const [rows] = await db.query(
+        'SELECT u.*, e.extension_number, e.old_extension_number, e.ip_address, e.mac_address, e.phone_model, e.status, e.last_seen, e.sip_status, e.sip_port_open FROM users u LEFT JOIN extensions e ON u.id = e.user_id WHERE u.id = ?',
+        [userId]
+    );
+    return rows[0] || null;
+}
+
 // --- AUTH ROUTES ---
 
 // @route   POST api/auth/login
@@ -76,7 +128,7 @@ router.post('/auth/login', async (req, res) => {
 // --- USER ROUTES ---
 // @route   POST api/users
 router.post('/users', async (req, res) => {
-    let { name_surname, email, department, section, office_number, designation, station, extension_number, ip_address, mac_address, phone_model, role } = req.body;
+    let { name_surname, email, department, section, office_number, designation, station, extension_number, old_extension_number, old_extension, ip_address, mac_address, phone_model, role } = req.body;
 
     if (!name_surname) return res.status(400).json({ msg: 'Please provide name & surname.' });
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ msg: 'Please provide a valid email address.' });
@@ -84,11 +136,9 @@ router.post('/users', async (req, res) => {
     // Automatically generate username: first initial + surname
     const username = generateUsername(name_surname);
 
-    // Sanitize empty strings to null
-    const toNull = (val) => (val && val.trim() !== '') ? val.trim() : null;
-
     ip_address = toNull(ip_address);
     extension_number = toNull(extension_number);
+    old_extension_number = toNull(old_extension_number ?? old_extension);
     department = toNull(department);
     section = toNull(section);
     office_number = toNull(office_number);
@@ -113,8 +163,13 @@ router.post('/users', async (req, res) => {
             [name_surname, email, username, password, department, section, office_number, designation, station, role || 'user']
         );
         await db.query(
-            'INSERT INTO extensions (user_id, extension_number, ip_address, mac_address, phone_model) VALUES (?, ?, ?, ?, ?)',
-            [userResult.insertId, extension_number, ip_address, mac_address, phone_model]
+            'INSERT INTO extensions (user_id, extension_number, old_extension_number, ip_address, mac_address, phone_model) VALUES (?, ?, ?, ?, ?, ?)',
+            [userResult.insertId, extension_number, old_extension_number, ip_address, mac_address, phone_model]
+        );
+        await recordActivity(
+            'USER_CREATE',
+            { id: userResult.insertId, fields: pickAuditFields({ name_surname, email, department, section, office_number, designation, station, extension_number, old_extension_number, ip_address, mac_address, phone_model, role: role || 'user' }) },
+            getAuditUser(req)
         );
         res.status(201).json({ msg: 'User and extension added successfully.' });
     } catch (err) {
@@ -132,10 +187,10 @@ router.get('/users', async (req, res) => {
 
         if (department) { baseQuery += ` AND u.department LIKE ?`; params.push(`%${department}%`); }
         if (user) {
-            baseQuery += ` AND (u.name_surname LIKE ? OR u.username LIKE ? OR u.email LIKE ?)`;
-            params.push(`%${user}%`, `%${user}%`, `%${user}%`);
+            baseQuery += ` AND (u.name_surname LIKE ? OR u.username LIKE ? OR u.email LIKE ? OR u.department LIKE ? OR u.section LIKE ? OR u.station LIKE ? OR u.office_number LIKE ? OR u.designation LIKE ?)`;
+            params.push(`%${user}%`, `%${user}%`, `%${user}%`, `%${user}%`, `%${user}%`, `%${user}%`, `%${user}%`, `%${user}%`);
         }
-        if (extension) { baseQuery += ` AND e.extension_number LIKE ?`; params.push(`%${extension}%`); }
+        if (extension) { baseQuery += ` AND (e.extension_number LIKE ? OR e.old_extension_number LIKE ?)`; params.push(`%${extension}%`, `%${extension}%`); }
 
         if (page && limit) {
             const pageNum = parseInt(page);
@@ -145,11 +200,11 @@ router.get('/users', async (req, res) => {
             const [countResult] = await db.query(`SELECT COUNT(*) as total ${baseQuery}`, params);
             const total = countResult[0].total;
 
-            const [rows] = await db.query(`SELECT u.*, e.extension_number, e.ip_address, e.mac_address, e.phone_model, e.status, e.last_seen, e.sip_status ${baseQuery} ORDER BY u.name_surname LIMIT ? OFFSET ?`, [...params, limitNum, offset]);
+            const [rows] = await db.query(`SELECT u.*, e.extension_number, e.old_extension_number, e.ip_address, e.mac_address, e.phone_model, e.status, e.last_seen, e.sip_status, e.sip_port_open ${baseQuery} ORDER BY u.name_surname LIMIT ? OFFSET ?`, [...params, limitNum, offset]);
 
             res.json({ data: rows, total, page: pageNum, limit: limitNum });
         } else {
-            const [rows] = await db.query(`SELECT u.*, e.extension_number, e.ip_address, e.mac_address, e.phone_model, e.status, e.last_seen, e.sip_status ${baseQuery} ORDER BY u.name_surname`, params);
+            const [rows] = await db.query(`SELECT u.*, e.extension_number, e.old_extension_number, e.ip_address, e.mac_address, e.phone_model, e.status, e.last_seen, e.sip_status, e.sip_port_open ${baseQuery} ORDER BY u.name_surname`, params);
             res.json(rows);
         }
     } catch (err) {
@@ -160,17 +215,15 @@ router.get('/users', async (req, res) => {
 
 // @route   PUT api/users/:id
 router.put('/users/:id', async (req, res) => {
-    let { name_surname, email, department, section, office_number, designation, station, extension_number, ip_address, mac_address, phone_model, role } = req.body;
+    let { name_surname, email, department, section, office_number, designation, station, extension_number, old_extension_number, old_extension, ip_address, mac_address, phone_model, role } = req.body;
     const userId = req.params.id;
 
     if (!name_surname) return res.status(400).json({ msg: 'Please provide name & surname.' });
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ msg: 'Please provide a valid email address.' });
 
-    // Sanitize empty strings to null
-    const toNull = (val) => (val === null || val === undefined || (typeof val === 'string' && val.trim() === '')) ? null : (typeof val === 'string' ? val.trim() : val);
-
     ip_address = toNull(ip_address);
     extension_number = toNull(extension_number);
+    old_extension_number = toNull(old_extension_number ?? old_extension);
     department = toNull(department);
     section = toNull(section);
     office_number = toNull(office_number);
@@ -183,6 +236,8 @@ router.put('/users/:id', async (req, res) => {
     try {
         // Automatically update username when name changes for automation
         const username = generateUsername(name_surname);
+        const before = await getUserSnapshot(userId);
+        if (!before) return res.status(404).json({ msg: 'User not found.' });
 
         if (ip_address) {
             const [existingIp] = await db.query('SELECT u.name_surname FROM extensions e JOIN users u ON e.user_id = u.id WHERE e.ip_address = ? AND u.id != ?', [ip_address, userId]);
@@ -203,19 +258,22 @@ router.put('/users/:id', async (req, res) => {
             [name_surname, email, username, department, section, office_number, designation, station, role || 'user', userId]
         );
         const [extResult] = await db.query(
-            'UPDATE extensions SET extension_number = ?, ip_address = ?, mac_address = ?, phone_model = ? WHERE user_id = ?',
-            [extension_number, ip_address, mac_address, phone_model, userId]
+            'UPDATE extensions SET extension_number = ?, old_extension_number = ?, ip_address = ?, mac_address = ?, phone_model = ? WHERE user_id = ?',
+            [extension_number, old_extension_number, ip_address, mac_address, phone_model, userId]
         );
         if (extResult.affectedRows === 0) {
             // If no row updated, it might be missing (common with imports). Check and insert if needed.
             const [existing] = await db.query('SELECT id FROM extensions WHERE user_id = ?', [userId]);
             if (existing.length === 0) {
                 await db.query(
-                    'INSERT INTO extensions (user_id, extension_number, ip_address, mac_address, phone_model) VALUES (?, ?, ?, ?, ?)',
-                    [userId, extension_number, ip_address, mac_address, phone_model]
+                    'INSERT INTO extensions (user_id, extension_number, old_extension_number, ip_address, mac_address, phone_model) VALUES (?, ?, ?, ?, ?, ?)',
+                    [userId, extension_number, old_extension_number, ip_address, mac_address, phone_model]
                 );
             }
         }
+        const after = pickAuditFields({ name_surname, email, department, section, office_number, designation, station, extension_number, old_extension_number, ip_address, mac_address, phone_model, role: role || 'user' });
+        const changed_fields = diffAuditFields(before, after);
+        await recordActivity('USER_UPDATE', { id: Number(userId), changed_fields }, getAuditUser(req));
         res.json({ msg: 'User updated successfully.' });
     } catch (err) {
         console.error('Error updating user:', err.message);
@@ -226,8 +284,10 @@ router.put('/users/:id', async (req, res) => {
 // @route   DELETE api/users/:id
 router.delete('/users/:id', async (req, res) => {
     try {
+        const before = await getUserSnapshot(req.params.id);
         const [result] = await db.query('DELETE FROM users WHERE id = ?', [req.params.id]);
         if (result.affectedRows === 0) return res.status(404).json({ msg: 'User not found.' });
+        await recordActivity('USER_DELETE', { id: Number(req.params.id), fields: pickAuditFields(before) }, getAuditUser(req));
         res.json({ msg: 'User deleted successfully.' });
     } catch (err) {
         console.error(err.message);
@@ -244,7 +304,15 @@ router.post('/users/bulk-delete', async (req, res) => {
     const connection = await db.getConnection();
     try {
         await connection.beginTransaction();
+        const [deletedUsers] = await connection.query(
+            'SELECT u.*, e.extension_number, e.old_extension_number, e.ip_address, e.mac_address, e.phone_model FROM users u LEFT JOIN extensions e ON u.id = e.user_id WHERE u.id IN (?)',
+            [ids]
+        );
         await connection.query('DELETE FROM users WHERE id IN (?)', [ids]);
+        await connection.query(
+            'INSERT INTO activity_logs (action, details, user_name) VALUES (?, ?, ?)',
+            ['USER_BULK_DELETE', JSON.stringify({ count: deletedUsers.length, users: deletedUsers.slice(0, 25).map(pickAuditFields), omitted: Math.max(0, deletedUsers.length - 25) }), getAuditUser(req)]
+        );
         await connection.commit();
         res.json({ msg: `${ids.length} users deleted successfully.` });
     } catch (err) {
@@ -306,7 +374,7 @@ router.get('/reports/daily', async (req, res) => {
         const startOfDay = new Date(date); startOfDay.setHours(0, 0, 0, 0);
         const endOfDay = new Date(date); endOfDay.setHours(23, 59, 59, 999);
         const [logs] = await db.query(
-            `SELECT e.extension_number, e.ip_address, u.name_surname, u.department, u.station, pl.ping_time, pl.result FROM ping_logs pl JOIN extensions e ON pl.extension_id = e.id JOIN users u ON e.user_id = u.id WHERE pl.ping_time >= ? AND pl.ping_time <= ? AND pl.result = 'Failed' ORDER BY pl.ping_time DESC`,
+            `SELECT e.extension_number, e.old_extension_number, e.ip_address, u.name_surname, u.department, u.station, pl.ping_time, pl.result FROM ping_logs pl JOIN extensions e ON pl.extension_id = e.id JOIN users u ON e.user_id = u.id WHERE pl.ping_time >= ? AND pl.ping_time <= ? AND pl.result = 'Failed' ORDER BY pl.ping_time DESC`,
             [startOfDay, endOfDay]
         );
         if (format === 'pdf') { generatePDF(res, logs, `Daily Downtime Report - ${date}`, `daily_report_${date}.pdf`); }
@@ -322,7 +390,7 @@ router.get('/reports/range', async (req, res) => {
         const start = new Date(startDate); start.setHours(0, 0, 0, 0);
         const end = new Date(endDate); end.setHours(23, 59, 59, 999);
         const [logs] = await db.query(
-            `SELECT e.extension_number, e.ip_address, u.name_surname, u.department, u.station, pl.ping_time, pl.result FROM ping_logs pl JOIN extensions e ON pl.extension_id = e.id JOIN users u ON e.user_id = u.id WHERE pl.ping_time >= ? AND pl.ping_time <= ? AND pl.result = 'Failed' ORDER BY pl.ping_time DESC`,
+            `SELECT e.extension_number, e.old_extension_number, e.ip_address, u.name_surname, u.department, u.station, pl.ping_time, pl.result FROM ping_logs pl JOIN extensions e ON pl.extension_id = e.id JOIN users u ON e.user_id = u.id WHERE pl.ping_time >= ? AND pl.ping_time <= ? AND pl.result = 'Failed' ORDER BY pl.ping_time DESC`,
             [start, end]
         );
         if (format === 'pdf') { generatePDF(res, logs, `Downtime Report - ${startDate} to ${endDate}`, `report_${startDate}_to_${endDate}.pdf`); }
@@ -341,13 +409,14 @@ function generatePDF(res, logs, title, filename) {
     const userX = 220, timeX = 400;
     doc.fontSize(10).text('Extension', 50, doc.y, { bold: true }).text('User', userX, doc.y, { bold: true }).text('Time of Failure', timeX, doc.y, { bold: true }).moveDown();
     logs.forEach(log => {
-        doc.fontSize(9).text(log.extension_number, 50, doc.y, { width: 70 }).text(`${log.name_surname} (${log.department || 'N/A'})`, userX, doc.y, { width: 180 }).text(new Date(log.ping_time).toLocaleString(), timeX, doc.y, { width: 150 }).moveDown();
+        const extensionLabel = log.old_extension_number ? `${log.extension_number} (old ${log.old_extension_number})` : log.extension_number;
+        doc.fontSize(9).text(extensionLabel, 50, doc.y, { width: 140 }).text(`${log.name_surname} (${log.department || 'N/A'})`, userX, doc.y, { width: 180 }).text(new Date(log.ping_time).toLocaleString(), timeX, doc.y, { width: 150 }).moveDown();
     });
     doc.end();
 }
 
 function generateExcel(res, logs, filename) {
-    const worksheetData = logs.map(log => ({ 'Extension': log.extension_number, 'IP Address': log.ip_address, 'User': log.name_surname, 'Department': log.department || 'N/A', 'Station': log.station || 'N/A', 'Time of Failure': new Date(log.ping_time).toLocaleString() }));
+    const worksheetData = logs.map(log => ({ 'Extension': log.extension_number, 'Old Extension': log.old_extension_number || '', 'IP Address': log.ip_address, 'User': log.name_surname, 'Department': log.department || 'N/A', 'Station': log.station || 'N/A', 'Time of Failure': new Date(log.ping_time).toLocaleString() }));
     const workbook = xlsx.utils.book_new();
     const worksheet = xlsx.utils.json_to_sheet(worksheetData);
     xlsx.utils.book_append_sheet(workbook, worksheet, 'Downtime');

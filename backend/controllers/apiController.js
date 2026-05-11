@@ -29,6 +29,10 @@ exports.addMetadata = async (req, res) => {
 
     try {
         const [result] = await db.query(`INSERT IGNORE INTO ${type} (name) VALUES (?)`, [name]);
+        await db.query(
+            'INSERT INTO activity_logs (action, details, user_name) VALUES (?, ?, ?)',
+            ['METADATA_CREATE', JSON.stringify({ type, id: result.insertId || null, name }), req.body?.audit_user || 'Admin']
+        );
         res.json({ id: result.insertId, name });
     } catch (err) {
         console.error(`Error adding to ${type}:`, err.message);
@@ -43,7 +47,12 @@ exports.deleteMetadata = async (req, res) => {
     if (!allowedTypes.includes(type)) return res.status(400).json({ msg: 'Invalid metadata type' });
 
     try {
+        const [rows] = await db.query(`SELECT * FROM ${type} WHERE id = ?`, [id]);
         await db.query(`DELETE FROM ${type} WHERE id = ?`, [id]);
+        await db.query(
+            'INSERT INTO activity_logs (action, details, user_name) VALUES (?, ?, ?)',
+            ['METADATA_DELETE', JSON.stringify({ type, id: Number(id), name: rows[0]?.name || null }), req.query?.audit_user || req.body?.audit_user || 'Admin']
+        );
         res.json({ msg: `${type.slice(0, -1)} deleted successfully` });
     } catch (err) {
         console.error(`Error deleting from ${type}:`, err.message);
@@ -73,18 +82,21 @@ exports.importUsers = async (req, res) => {
         const [userRows] = await connection.query('SELECT name_surname FROM users');
         const existingUsers = new Set(userRows.map(u => u.name_surname.trim().toLowerCase()));
 
-        // Step 1: Pre-collect all unique departments and sections
+        // Step 1: Pre-collect all unique departments, sections, and stations
         const allDepts = new Set();
         const allSections = new Set();
+        const allStations = new Set();
 
         for (const row of data) {
             const dept = row['Department'] || row['department'] || 'General';
             const sect = row['Section'] || row['section'] || 'General';
+            const station = row['Station'] || row['station'] || '';
             allDepts.add(dept);
             allSections.add(sect);
+            if (station) allStations.add(station);
         }
 
-        // Bulk insert departments and sections
+        // Bulk insert departments, sections, and stations
         if (allDepts.size > 0) {
             const deptValues = Array.from(allDepts).map(d => [d]);
             await connection.query('INSERT IGNORE INTO departments (name) VALUES ?', [deptValues]);
@@ -93,8 +105,12 @@ exports.importUsers = async (req, res) => {
             const sectValues = Array.from(allSections).map(s => [s]);
             await connection.query('INSERT IGNORE INTO sections (name) VALUES ?', [sectValues]);
         }
+        if (allStations.size > 0) {
+            const stationValues = Array.from(allStations).map(s => [s]);
+            await connection.query('INSERT IGNORE INTO stations (name) VALUES ?', [stationValues]);
+        }
 
-        console.log(`[IMPORT] Pre-inserted ${allDepts.size} departments and ${allSections.size} sections`);
+        console.log(`[IMPORT] Pre-inserted ${allDepts.size} departments, ${allSections.size} sections, and ${allStations.size} stations`);
 
         // Step 2: Parse and validate all rows first
         const validUsers = [];
@@ -108,6 +124,7 @@ exports.importUsers = async (req, res) => {
             }
             if (name) name = name.trim();
             const ext = String(row['Extension'] || row['Extension Number'] || row['ext'] || '').trim();
+            const oldExt = String(row['Old Extension'] || row['Old Extension Number'] || row['old_extension_number'] || row['old_extension'] || '').trim();
 
             // --- REFINED SKIP LOGIC (Extension as Primary Key) ---
             if (ext) {
@@ -135,6 +152,7 @@ exports.importUsers = async (req, res) => {
                 office: row['Office Number'] || row['office_number'] || '',
                 designation: row['Designation'] || row['designation'] || '',
                 station: row['Station'] || row['station'] || '',
+                oldExt,
                 ip: (row['IP Address'] || row['ip_address'] || '').trim(),
                 mac: (row['Mac Address'] || row['mac_address'] || '').trim(),
                 phone: (row['Phone Model'] || row['phone_model'] || '').trim()
@@ -164,14 +182,14 @@ exports.importUsers = async (req, res) => {
                 const extValues = [];
                 batch.forEach((u, idx) => {
                     const userId = firstInsertId + idx;
-                    if (u.ext || u.ip || u.mac || u.phone) {
-                        extValues.push([userId, u.ext || null, u.ip || null, u.mac || null, u.phone || null]);
+                    if (u.ext || u.oldExt || u.ip || u.mac || u.phone) {
+                        extValues.push([userId, u.ext || null, u.oldExt || null, u.ip || null, u.mac || null, u.phone || null]);
                     }
                 });
 
                 if (extValues.length > 0) {
                     await connection.query(
-                        'INSERT INTO extensions (user_id, extension_number, ip_address, mac_address, phone_model) VALUES ?',
+                        'INSERT INTO extensions (user_id, extension_number, old_extension_number, ip_address, mac_address, phone_model) VALUES ?',
                         [extValues]
                     );
                 }
@@ -185,6 +203,10 @@ exports.importUsers = async (req, res) => {
             }
         }
 
+        await connection.query(
+            'INSERT INTO activity_logs (action, details, user_name) VALUES (?, ?, ?)',
+            ['USER_IMPORT', JSON.stringify({ importedCount, skippedCount, fields: ['name_surname', 'email', 'department', 'section', 'station', 'office_number', 'designation', 'extension_number', 'old_extension_number', 'ip_address', 'mac_address', 'phone_model'] }), 'System']
+        );
         await connection.commit();
         console.log(`[IMPORT] Complete! Imported ${importedCount}, skipped ${skippedCount}`);
         res.json({ msg: `Imported ${importedCount}. Skipped ${skippedCount}.`, importedCount, skippedCount, errors });

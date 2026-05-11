@@ -15,12 +15,12 @@ export const apiService = {
         const response = await axios.put(`/users/${id}`, userData);
         return response.data;
     },
-    deleteUser: async (id: number) => {
-        const response = await axios.delete(`/users/${id}`);
+    deleteUser: async (id: number, auditUser?: string) => {
+        const response = await axios.delete(`/users/${id}`, { data: { audit_user: auditUser } });
         return response.data;
     },
-    bulkDeleteUsers: async (ids: number[]) => {
-        const response = await axios.post('/users/bulk-delete', { ids });
+    bulkDeleteUsers: async (ids: number[], auditUser?: string) => {
+        const response = await axios.post('/users/bulk-delete', { ids, audit_user: auditUser });
         return response.data;
     },
 
@@ -77,12 +77,12 @@ export const apiService = {
     },
 
     // Metadata Management
-    addMetadata: async (type: string, name: string) => {
-        const response = await axios.post(`/metadata/${type}`, { name });
+    addMetadata: async (type: string, name: string, auditUser?: string) => {
+        const response = await axios.post(`/metadata/${type}`, { name, audit_user: auditUser });
         return response.data;
     },
-    deleteMetadata: async (type: string, id: number) => {
-        const response = await axios.delete(`/metadata/${type}/${id}`);
+    deleteMetadata: async (type: string, id: number, auditUser?: string) => {
+        const response = await axios.delete(`/metadata/${type}/${id}`, { data: { audit_user: auditUser } });
         return response.data;
     }
 };

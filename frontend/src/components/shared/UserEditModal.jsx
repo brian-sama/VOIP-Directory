@@ -15,6 +15,7 @@ const UserEditModal = ({ show, handleClose, handleSubmit, user }) => {
         designation: '',
         station: '',
         extension_number: '',
+        old_extension_number: '',
         ip_address: '',
         mac_address: '',
         phone_model: '',
@@ -54,6 +55,7 @@ const UserEditModal = ({ show, handleClose, handleSubmit, user }) => {
                 designation: user.designation || '',
                 station: user.station || '',
                 extension_number: user.extension_number || '',
+                old_extension_number: user.old_extension_number || '',
                 ip_address: user.ip_address || '',
                 mac_address: user.mac_address || '',
                 phone_model: user.phone_model || '',
@@ -65,13 +67,13 @@ const UserEditModal = ({ show, handleClose, handleSubmit, user }) => {
         } else {
             setFormData({
                 name_surname: '', email: '', department: '', section: '', office_number: '', designation: '', station: '',
-                extension_number: '', ip_address: '', mac_address: '', phone_model: '', role: 'user',
+                extension_number: '', old_extension_number: '', ip_address: '', mac_address: '', phone_model: '', role: 'user',
             });
             setCustomDepartment(false);
             setCustomSection(false);
             setCustomStation(false);
         }
-    }, [user, show, departments, sections]);
+    }, [user, show, departments, sections, stations]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -249,6 +251,10 @@ const UserEditModal = ({ show, handleClose, handleSubmit, user }) => {
                     <Form.Group className="mb-3">
                         <Form.Label>Extension Number</Form.Label>
                         <Form.Control type="text" name="extension_number" value={formData.extension_number} onChange={handleChange} />
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                        <Form.Label>Old Extension</Form.Label>
+                        <Form.Control type="text" name="old_extension_number" value={formData.old_extension_number} onChange={handleChange} />
                     </Form.Group>
                     <Form.Group className="mb-3">
                         <Form.Label>IP Address</Form.Label>

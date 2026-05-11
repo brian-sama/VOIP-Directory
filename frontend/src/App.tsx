@@ -40,7 +40,7 @@ import { LoginPage } from './components/pages/LoginPage';
 import logo from './assets/logo.jpg';
 
 type View = 'DASHBOARD' | 'DIRECTORY' | 'ADMIN' | 'REPORTS' | 'LOGS' | 'LOGIN';
-type SortKey = 'name_surname' | 'email' | 'extension_number' | 'ip_address' | 'department' | 'status';
+type SortKey = 'name_surname' | 'email' | 'extension_number' | 'old_extension_number' | 'ip_address' | 'department' | 'station' | 'status';
 
 const App: React.FC = () => {
   const { isAuthenticated, logout, isLoading: authLoading, user: authUser } = useAuth();
@@ -200,6 +200,7 @@ const App: React.FC = () => {
         stripPunctuation(u.name_surname || '').includes(strippedQuery) ||
         stripPunctuation(u.email || '').includes(strippedQuery) ||
         stripPunctuation(u.extension_number || '').includes(strippedQuery) ||
+        stripPunctuation(u.old_extension_number || '').includes(strippedQuery) ||
         stripPunctuation(u.ip_address || '').includes(strippedQuery) ||
         stripPunctuation(u.department || '').includes(strippedQuery) ||
         stripPunctuation(u.section || '').includes(strippedQuery) ||
@@ -233,7 +234,7 @@ const App: React.FC = () => {
     });
 
     return result;
-  }, [users, searchQuery, filterDept, filterSection, sortConfig]);
+  }, [users, searchQuery, filterDept, filterSection, filterStatus, sortConfig]);
 
   const toEmpty = (val: any) => (val === null || val === undefined) ? '' : val;
   const ensureNoNulls = (user: any) => {
@@ -243,6 +244,7 @@ const App: React.FC = () => {
       name_surname: toEmpty(user.name_surname),
       email: toEmpty(user.email),
       extension_number: toEmpty(user.extension_number),
+      old_extension_number: toEmpty(user.old_extension_number),
       ip_address: toEmpty(user.ip_address),
       department: toEmpty(user.department),
       section: toEmpty(user.section),
@@ -282,7 +284,15 @@ const App: React.FC = () => {
         stripPunctuation(u.name_surname || '').includes(strippedAdminQuery) ||
         stripPunctuation(u.email || '').includes(strippedAdminQuery) ||
         stripPunctuation(u.extension_number || '').includes(strippedAdminQuery) ||
-        stripPunctuation(u.ip_address || '').includes(strippedAdminQuery)
+        stripPunctuation(u.old_extension_number || '').includes(strippedAdminQuery) ||
+        stripPunctuation(u.ip_address || '').includes(strippedAdminQuery) ||
+        stripPunctuation(u.department || '').includes(strippedAdminQuery) ||
+        stripPunctuation(u.section || '').includes(strippedAdminQuery) ||
+        stripPunctuation(u.station || '').includes(strippedAdminQuery) ||
+        stripPunctuation(u.office_number || '').includes(strippedAdminQuery) ||
+        stripPunctuation(u.designation || '').includes(strippedAdminQuery) ||
+        stripPunctuation(u.mac_address || '').includes(strippedAdminQuery) ||
+        stripPunctuation(u.phone_model || '').includes(strippedAdminQuery)
       );
     }
 
@@ -312,7 +322,7 @@ const App: React.FC = () => {
 
     setIsLoading(true);
     try {
-      await apiService.bulkDeleteUsers(selectedIds);
+      await apiService.bulkDeleteUsers(selectedIds, authUser?.username);
       success(`${selectedIds.length} users deleted.`);
       setSelectedIds([]);
       fetchData();
@@ -354,7 +364,7 @@ const App: React.FC = () => {
   const handleMetaAdd = async (type: string) => {
     if (!newMeta) return;
     try {
-      await apiService.addMetadata(type, newMeta);
+      await apiService.addMetadata(type, newMeta, authUser?.username);
       success(`${type} entity injected.`);
       setNewMeta('');
       fetchData();
@@ -364,14 +374,14 @@ const App: React.FC = () => {
   const handleMetaDel = async (type: string, id: number) => {
     if (!confirm(`Purge this ${type} entity?`)) return;
     try {
-      await apiService.deleteMetadata(type, id);
+      await apiService.deleteMetadata(type, id, authUser?.username);
       success("Deleted.");
       fetchData();
     } catch (e) { toastError("Delete failed."); }
   };
 
   const handleExportCSV = () => {
-    const headers = ['name_surname', 'email', 'extension_number', 'ip_address', 'department', 'section', 'station', 'mac_address', 'phone_model', 'designation', 'office_number'];
+    const headers = ['name_surname', 'email', 'extension_number', 'old_extension_number', 'ip_address', 'department', 'section', 'station', 'mac_address', 'phone_model', 'designation', 'office_number'];
     const csvRows = [headers.join(',')];
 
     users.forEach((u: any) => {
@@ -391,11 +401,12 @@ const App: React.FC = () => {
   const saveUser = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const userPayload = { ...editingUser, audit_user: authUser?.username };
       if (editingUser.id !== 0) {
-        await apiService.updateUser(editingUser.id, editingUser);
+        await apiService.updateUser(editingUser.id, userPayload);
         success("User updated successfully.");
       } else {
-        await apiService.addUser(editingUser);
+        await apiService.addUser(userPayload);
         success("User added successfully.");
       }
       fetchData();
@@ -502,7 +513,7 @@ const App: React.FC = () => {
                 <button onClick={handleExportCSV} className="h-12 px-6 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-700 shadow-xl shadow-indigo-100 flex items-center gap-2 transition-all">
                   <FileSpreadsheet className="w-4 h-4" /> Export CSV
                 </button>
-                <button onClick={() => setEditingUser({ id: 0, name_surname: '', email: '', extension_number: '', department: (depts[0]?.name || 'IT'), section: '', station: '', ip_address: '', mac_address: '', phone_model: '', designation: '', office_number: '', role: 'user' })} className="h-12 px-6 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-blue-700 shadow-xl shadow-blue-100 flex items-center gap-2 transition-all">
+                <button onClick={() => setEditingUser({ id: 0, name_surname: '', email: '', extension_number: '', old_extension_number: '', department: (depts[0]?.name || 'IT'), section: '', station: '', ip_address: '', mac_address: '', phone_model: '', designation: '', office_number: '', role: 'user' })} className="h-12 px-6 bg-blue-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-blue-700 shadow-xl shadow-blue-100 flex items-center gap-2 transition-all">
                   <Plus className="w-4 h-4" /> New Hardware
                 </button>
               </div>
@@ -544,8 +555,10 @@ const App: React.FC = () => {
                     <TableHeader k="email" label="Email" />
                     <th className="px-6 py-4">Designation</th>
                     <TableHeader k="department" label="Department" />
+                    <TableHeader k="station" label="Station" />
                     <th className="px-6 py-4">Office Number</th>
                     <TableHeader k="extension_number" label="Extension" />
+                    <TableHeader k="old_extension_number" label="Old Extension" />
                     {isAdmin && <TableHeader k="ip_address" label="IP Address" />}
                     {isAdmin && <th className="px-6 py-4">Status</th>}
                   </tr>
@@ -557,8 +570,10 @@ const App: React.FC = () => {
                       <td className="px-6 py-6 font-bold text-slate-500">{u.email || 'N/A'}</td>
                       <td className="px-6 py-6 text-xs font-bold text-slate-600 italic">{u.designation || 'N/A'}</td>
                       <td className="px-6 py-6 text-xs font-black text-slate-500 uppercase">{u.department}</td>
+                      <td className="px-6 py-6 text-xs font-black text-slate-500 uppercase">{u.station || 'N/A'}</td>
                       <td className="px-6 py-6 text-xs font-bold text-slate-600">{u.office_number || 'N/A'}</td>
-                      <td className="px-6 py-6"><span className="bg-blue-600 text-white px-4 py-2 rounded-xl font-black text-sm font-mono shadow-md shadow-blue-100">{u.extension_number}</span></td>
+                      <td className="px-6 py-6"><span className="bg-blue-600 text-white px-4 py-2 rounded-xl font-black text-sm font-mono shadow-md shadow-blue-100">{u.extension_number || 'N/A'}</span></td>
+                      <td className="px-6 py-6 text-xs font-black font-mono text-slate-400">{u.old_extension_number || 'N/A'}</td>
                       {isAdmin && <td className="px-6 py-6 font-bold font-mono text-xs text-slate-400">{u.ip_address}</td>}
                       {isAdmin && (
                         <td className="px-6 py-6">
@@ -684,6 +699,8 @@ const App: React.FC = () => {
                       </th>
                       <th className="px-8 py-5">Employee Name</th>
                       <th className="px-8 py-5">Extension</th>
+                      <th className="px-8 py-5">Old Ext.</th>
+                      <th className="px-8 py-5">Station</th>
                       <th className="px-8 py-5">IP Address</th>
                       <th className="px-8 py-5">Device Details</th>
                       <th className="px-8 py-5 text-right">Operations</th>
@@ -707,6 +724,11 @@ const App: React.FC = () => {
                           <p className="text-[10px] font-black text-slate-400 mt-1">{u.department}</p>
                         </td>
                         <td className="px-8 py-6 font-black text-blue-600">{u.extension_number}</td>
+                        <td className="px-8 py-6 font-black font-mono text-xs text-slate-400">{u.old_extension_number || 'N/A'}</td>
+                        <td className="px-8 py-6">
+                          <p className="text-xs font-black text-slate-600 uppercase">{u.station || 'N/A'}</p>
+                          <p className="text-[9px] font-bold text-slate-300 italic">{u.office_number || 'No office'}</p>
+                        </td>
                         <td className="px-8 py-6 font-black font-mono text-xs text-slate-400">{u.ip_address}</td>
                         <td className="px-8 py-6">
                           <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">{u.mac_address}</p>
@@ -715,7 +737,7 @@ const App: React.FC = () => {
                         <td className="px-8 py-6 text-right">
                           <div className="inline-flex gap-2">
                             <button onClick={() => setEditingUser(ensureNoNulls(u))} title="Edit Configuration" className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all"><Edit2 className="w-4 h-4" /></button>
-                            <button onClick={async () => { if (confirm('Permanently delete this user?')) { await apiService.deleteUser(u.id); fetchData(); } }} title="Purge Unit" className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all"><Trash2 className="w-4 h-4" /></button>
+                            <button onClick={async () => { if (confirm('Permanently delete this user?')) { await apiService.deleteUser(u.id, authUser?.username); fetchData(); } }} title="Purge Unit" className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all"><Trash2 className="w-4 h-4" /></button>
                           </div>
                         </td>
                       </tr>
@@ -909,6 +931,10 @@ const App: React.FC = () => {
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Extension Code</label>
                   <input placeholder="8000" className="input-field font-black text-blue-600" value={editingUser.extension_number || ''} onChange={e => setEditingUser({ ...editingUser, extension_number: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Old Extension</label>
+                  <input placeholder="Previous extension" className="input-field font-mono" value={editingUser.old_extension_number || ''} onChange={e => setEditingUser({ ...editingUser, old_extension_number: e.target.value })} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">IP Address</label>

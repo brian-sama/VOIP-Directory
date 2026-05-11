@@ -14,13 +14,20 @@ export interface VoipUser {
     name_surname: string;
   email?: string;
     extension_number: string;
+    old_extension_number?: string;
     department: string;
     section: string;
     station: string;
+    office_number?: string;
+    designation?: string;
     ip_address: string;
     mac_address: string;
+    phone_model?: string;
     status: DeviceStatus | string;
+    sip_status?: string;
+    sip_port_open?: boolean | number | null;
     last_seen: string;
+    role?: UserRole | string;
 }
 
 export interface ActivityLog {
