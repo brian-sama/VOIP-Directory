@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS extensions (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
   extension_number VARCHAR(10),
-  old_extension_number VARCHAR(10),
+  old_extension_number VARCHAR(50),
   ip_address VARCHAR(45),
   mac_address VARCHAR(50),
   phone_model VARCHAR(100),
@@ -107,7 +107,7 @@ WHERE table_schema = @db
   AND column_name = 'old_extension_number';
 SET @sql = IF(
     @old_extension_col_exists = 0,
-    'ALTER TABLE extensions ADD COLUMN old_extension_number VARCHAR(10) NULL AFTER extension_number',
+    'ALTER TABLE extensions ADD COLUMN old_extension_number VARCHAR(50) NULL AFTER extension_number',
     'SELECT 1'
   );
 PREPARE stmt

@@ -26,6 +26,9 @@ const app = express();
 const server = http.createServer(app);
 const PORT = process.env.PORT || 5001;
 
+// IIS/Nginx proxies send X-Forwarded-For; express-rate-limit needs Express to trust that proxy.
+app.set('trust proxy', Number(process.env.TRUST_PROXY || 1));
+
 // Initialize Socket.io
 const { initializeSocket } = require('./socketHandler');
 initializeSocket(server);

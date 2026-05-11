@@ -10,7 +10,7 @@ WHERE table_schema = @db
 
 SET @sql = IF(
   @old_extension_col_exists = 0,
-  'ALTER TABLE extensions ADD COLUMN old_extension_number VARCHAR(10) NULL AFTER extension_number',
+  'ALTER TABLE extensions ADD COLUMN old_extension_number VARCHAR(50) NULL AFTER extension_number',
   'SELECT 1'
 );
 PREPARE stmt FROM @sql;
