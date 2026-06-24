@@ -137,13 +137,54 @@ async function checkExtensions() {
     }
 }
 
+// --- LOG RETENTION ---
+const PING_LOG_RETENTION_DAYS = parseInt(process.env.PING_LOG_RETENTION_DAYS, 10) || 30;
+const ACTIVITY_LOG_RETENTION_DAYS = parseInt(process.env.ACTIVITY_LOG_RETENTION_DAYS, 10) || 90;
+
+async function ensureIndexes() {
+    try {
+        await db.query(`
+            ALTER TABLE ping_logs
+            ADD INDEX IF NOT EXISTS idx_ping_logs_time (ping_time)
+        `).catch(() => {}); // Silently skip if syntax unsupported (MySQL < 8.0.29)
+        await db.query(`
+            ALTER TABLE activity_logs
+            ADD INDEX IF NOT EXISTS idx_activity_logs_created (created_at)
+        `).catch(() => {});
+        console.log('[Services] DB indexes verified.');
+    } catch (err) {
+        console.warn('[Services] Index check skipped:', err.message);
+    }
+}
+
+async function purgeOldLogs() {
+    try {
+        const [pingResult] = await db.query(
+            'DELETE FROM ping_logs WHERE ping_time < DATE_SUB(NOW(), INTERVAL ? DAY)',
+            [PING_LOG_RETENTION_DAYS]
+        );
+        const [activityResult] = await db.query(
+            'DELETE FROM activity_logs WHERE created_at < DATE_SUB(NOW(), INTERVAL ? DAY)',
+            [ACTIVITY_LOG_RETENTION_DAYS]
+        );
+        const deleted = pingResult.affectedRows + activityResult.affectedRows;
+        if (deleted > 0) console.log(`[Retention] Purged ${pingResult.affectedRows} ping logs, ${activityResult.affectedRows} activity logs.`);
+    } catch (err) {
+        console.error('[Retention] Purge failed:', err.message);
+    }
+}
+
 // --- STARTUP ---
 function startServices() {
     console.log('[Services] Starting background tasks...');
+    ensureIndexes();
     runDirectoryCleanup().catch(e => console.error('Initial cleanup failed', e));
     checkExtensions();
     setInterval(checkExtensions, PING_INTERVAL);
     setInterval(runDirectoryCleanup, 12 * 60 * 60 * 1000);
+    // Run log retention daily at midnight-ish (24h interval after startup)
+    setInterval(purgeOldLogs, 24 * 60 * 60 * 1000);
+    purgeOldLogs(); // Run once at startup to clean up immediately if needed
 }
 
 module.exports = { startServices, runDirectoryCleanup };

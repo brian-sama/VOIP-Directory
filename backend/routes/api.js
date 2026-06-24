@@ -1,12 +1,46 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
+const bcrypt = require('bcrypt');
+const Joi = require('joi');
 const multer = require('multer');
 const { runDirectoryCleanup } = require('../services');
 const apiController = require('../controllers/apiController');
 const { generateUsername } = require('../utils/userUtils');
 const PDFDocument = require('pdfkit');
 const xlsx = require('xlsx');
+
+const BCRYPT_ROUNDS = 12;
+
+// --- INPUT VALIDATION ---
+const userSchema = Joi.object({
+    name_surname: Joi.string().max(100).required(),
+    email: Joi.string().email({ tlds: { allow: false } }).allow('', null).optional(),
+    extension_number: Joi.string().max(20).allow('', null).optional(),
+    ip_address: Joi.string().ip({ version: ['ipv4'], cidr: 'forbidden' }).allow('', null).optional(),
+    mac_address: Joi.string().pattern(/^([0-9A-Fa-f]{2}[:\-]){5}[0-9A-Fa-f]{2}$/).allow('', null).optional(),
+}).unknown(true);
+
+const validateUser = (req, res, next) => {
+    const { error } = userSchema.validate(req.body, { abortEarly: false });
+    if (error) return res.status(400).json({ msg: error.details.map(d => d.message).join('. ') });
+    next();
+};
+
+// Compare password supporting both bcrypt hashes and legacy plain text.
+// On a successful plain-text match the stored password is upgraded to a hash.
+async function verifyAndUpgradePassword(plainText, stored, upgradeCallback) {
+    const isHashed = stored && (stored.startsWith('$2b$') || stored.startsWith('$2a$'));
+    if (isHashed) {
+        return bcrypt.compare(plainText, stored);
+    }
+    // Legacy plain-text comparison
+    if (plainText !== stored) return false;
+    // Upgrade to bcrypt in the background — don't block the login response
+    const hash = await bcrypt.hash(plainText, BCRYPT_ROUNDS);
+    upgradeCallback(hash).catch(err => console.error('[AUTH] Password upgrade failed:', err));
+    return true;
+}
 
 // Multer setup for memory storage
 const storage = multer.memoryStorage();
@@ -66,6 +100,20 @@ async function getUserSnapshot(userId) {
 
 // --- AUTH ROUTES ---
 
+// @route   GET api/auth/me
+router.get('/auth/me', (req, res) => {
+    if (!req.session?.user) return res.status(401).json({ msg: 'Not authenticated' });
+    res.json(req.session.user);
+});
+
+// @route   POST api/auth/logout
+router.post('/auth/logout', (req, res) => {
+    req.session.destroy(() => {
+        res.clearCookie('connect.sid');
+        res.json({ msg: 'Logged out' });
+    });
+});
+
 // @route   POST api/auth/login
 router.post('/auth/login', async (req, res) => {
     const startTime = Date.now();
@@ -83,15 +131,21 @@ router.post('/auth/login', async (req, res) => {
         const [adminRows] = await db.query('SELECT * FROM admins WHERE username = ?', [username]);
         console.log(`[AUTH] Admin check took ${Date.now() - startTime}ms`);
 
-        if (adminRows.length > 0 && password === adminRows[0].password) {
-            const user = { id: adminRows[0].id, username: adminRows[0].username, role: 'admin' };
-
-            console.log(`[AUTH] Admin login successful for ${username} in ${Date.now() - startTime}ms`);
-            return res.json({ msg: 'Login successful', role: 'admin', user });
+        if (adminRows.length > 0) {
+            const valid = await verifyAndUpgradePassword(
+                password,
+                adminRows[0].password,
+                hash => db.query('UPDATE admins SET password = ? WHERE id = ?', [hash, adminRows[0].id])
+            );
+            if (valid) {
+                const user = { id: adminRows[0].id, username: adminRows[0].username, role: 'admin' };
+                req.session.user = user;
+                console.log(`[AUTH] Admin login successful for ${username} in ${Date.now() - startTime}ms`);
+                return res.json({ msg: 'Login successful', role: 'admin', user });
+            }
         }
 
         // 2. Check Users Table with optimized query
-        // We look for direct matches first, then normalized matches
         const [userRows] = await db.query(
             'SELECT id, name_surname, username, department, section, role, password FROM users WHERE username = ? OR name_surname = ? OR username = ? LIMIT 5',
             [username, username, normalizedInput]
@@ -104,7 +158,11 @@ router.post('/auth/login', async (req, res) => {
             return storedUsername === normalizedInput || normalizedDbName === normalizedInput;
         });
 
-        if (matchedUser && password === matchedUser.password) {
+        if (matchedUser && await verifyAndUpgradePassword(
+            password,
+            matchedUser.password,
+            hash => db.query('UPDATE users SET password = ? WHERE id = ?', [hash, matchedUser.id])
+        )) {
             const user = {
                 id: matchedUser.id,
                 username: matchedUser.name_surname,
@@ -112,7 +170,7 @@ router.post('/auth/login', async (req, res) => {
                 section: matchedUser.section,
                 role: matchedUser.role || 'user'
             };
-
+            req.session.user = user;
             console.log(`[AUTH] User login successful for ${username} in ${Date.now() - startTime}ms`);
             return res.json({ msg: 'Login successful', role: user.role, user });
         }
@@ -127,7 +185,7 @@ router.post('/auth/login', async (req, res) => {
 
 // --- USER ROUTES ---
 // @route   POST api/users
-router.post('/users', async (req, res) => {
+router.post('/users', validateUser, async (req, res) => {
     let { name_surname, email, department, section, office_number, designation, station, extension_number, old_extension_number, old_extension, ip_address, mac_address, phone_model, role } = req.body;
 
     if (!name_surname) return res.status(400).json({ msg: 'Please provide name & surname.' });
@@ -157,7 +215,8 @@ router.post('/users', async (req, res) => {
             const [existingExt] = await db.query('SELECT u.name_surname FROM extensions e JOIN users u ON e.user_id = u.id WHERE e.extension_number = ?', [extension_number]);
             if (existingExt.length > 0) return res.status(400).json({ msg: `Extension ${extension_number} already assigned to ${existingExt[0].name_surname}.` });
         }
-        const password = extension_number || '1234';
+        const rawPassword = extension_number || '1234';
+        const password = await bcrypt.hash(rawPassword, BCRYPT_ROUNDS);
         const [userResult] = await db.query(
             'INSERT INTO users (name_surname, email, username, password, department, section, office_number, designation, station, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [name_surname, email, username, password, department, section, office_number, designation, station, role || 'user']
@@ -182,7 +241,7 @@ router.post('/users', async (req, res) => {
 router.get('/users', async (req, res) => {
     try {
         const { department, user, extension, page, limit } = req.query;
-        let baseQuery = `FROM users u LEFT JOIN extensions e ON u.id = e.user_id WHERE 1=1`;
+        let baseQuery = `FROM users u LEFT JOIN extensions e ON u.id = e.user_id WHERE u.deleted_at IS NULL`;
         const params = [];
 
         if (department) { baseQuery += ` AND u.department LIKE ?`; params.push(`%${department}%`); }
@@ -214,7 +273,7 @@ router.get('/users', async (req, res) => {
 });
 
 // @route   PUT api/users/:id
-router.put('/users/:id', async (req, res) => {
+router.put('/users/:id', validateUser, async (req, res) => {
     let { name_surname, email, department, section, office_number, designation, station, extension_number, old_extension_number, old_extension, ip_address, mac_address, phone_model, role } = req.body;
     const userId = req.params.id;
 
@@ -271,9 +330,9 @@ router.put('/users/:id', async (req, res) => {
                 );
             }
         }
-        const after = pickAuditFields({ name_surname, email, department, section, office_number, designation, station, extension_number, old_extension_number, ip_address, mac_address, phone_model, role: role || 'user' });
-        const changed_fields = diffAuditFields(before, after);
-        await recordActivity('USER_UPDATE', { id: Number(userId), changed_fields }, getAuditUser(req));
+        const afterSnapshot = pickAuditFields({ name_surname, email, department, section, office_number, designation, station, extension_number, old_extension_number, ip_address, mac_address, phone_model, role: role || 'user' });
+        const changed_fields = diffAuditFields(before, afterSnapshot);
+        await recordActivity('USER_UPDATE', { id: Number(userId), before: pickAuditFields(before), after: afterSnapshot, changed_fields }, getAuditUser(req));
         res.json({ msg: 'User updated successfully.' });
     } catch (err) {
         console.error('Error updating user:', err.message);
@@ -281,11 +340,11 @@ router.put('/users/:id', async (req, res) => {
     }
 });
 
-// @route   DELETE api/users/:id
+// @route   DELETE api/users/:id (soft delete)
 router.delete('/users/:id', async (req, res) => {
     try {
         const before = await getUserSnapshot(req.params.id);
-        const [result] = await db.query('DELETE FROM users WHERE id = ?', [req.params.id]);
+        const [result] = await db.query('UPDATE users SET deleted_at = NOW() WHERE id = ? AND deleted_at IS NULL', [req.params.id]);
         if (result.affectedRows === 0) return res.status(404).json({ msg: 'User not found.' });
         await recordActivity('USER_DELETE', { id: Number(req.params.id), fields: pickAuditFields(before) }, getAuditUser(req));
         res.json({ msg: 'User deleted successfully.' });
@@ -305,10 +364,10 @@ router.post('/users/bulk-delete', async (req, res) => {
     try {
         await connection.beginTransaction();
         const [deletedUsers] = await connection.query(
-            'SELECT u.*, e.extension_number, e.old_extension_number, e.ip_address, e.mac_address, e.phone_model FROM users u LEFT JOIN extensions e ON u.id = e.user_id WHERE u.id IN (?)',
+            'SELECT u.*, e.extension_number, e.old_extension_number, e.ip_address, e.mac_address, e.phone_model FROM users u LEFT JOIN extensions e ON u.id = e.user_id WHERE u.id IN (?) AND u.deleted_at IS NULL',
             [ids]
         );
-        await connection.query('DELETE FROM users WHERE id IN (?)', [ids]);
+        await connection.query('UPDATE users SET deleted_at = NOW() WHERE id IN (?) AND deleted_at IS NULL', [ids]);
         await connection.query(
             'INSERT INTO activity_logs (action, details, user_name) VALUES (?, ?, ?)',
             ['USER_BULK_DELETE', JSON.stringify({ count: deletedUsers.length, users: deletedUsers.slice(0, 25).map(pickAuditFields), omitted: Math.max(0, deletedUsers.length - 25) }), getAuditUser(req)]

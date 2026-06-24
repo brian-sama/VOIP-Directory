@@ -90,7 +90,8 @@ const requiredColumns = {
     ['designation', 'VARCHAR(100)'],
     ['station', 'VARCHAR(100)'],
     ['role', "ENUM('admin', 'user') DEFAULT 'user'"],
-    ['created_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP']
+    ['created_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'],
+    ['deleted_at', 'DATETIME NULL DEFAULT NULL']
   ],
   extensions: [
     ['user_id', 'INT NOT NULL'],
@@ -183,10 +184,18 @@ async function ensureSchema() {
       }
     }
 
-    await connection.query(
-      'INSERT IGNORE INTO admins (username, password) VALUES (?, ?)',
-      ['admin', 'bccit']
-    );
+    // Only create default admin if no admins exist at all
+    const [adminCount] = await connection.query('SELECT COUNT(*) as count FROM admins');
+    if (adminCount[0].count === 0) {
+      const bcrypt = require('bcrypt');
+      const defaultPassword = process.env.DEFAULT_ADMIN_PASSWORD || 'bccit';
+      const hash = await bcrypt.hash(defaultPassword, 12);
+      await connection.query(
+        'INSERT INTO admins (username, password) VALUES (?, ?)',
+        ['admin', hash]
+      );
+      console.log(`Default admin created. Password set from DEFAULT_ADMIN_PASSWORD env var (or "bccit" if not set). Change it immediately.`);
+    }
 
     const [tables] = await connection.query('SHOW TABLES');
     console.log(`Schema check complete for database "${DB_NAME}".`);

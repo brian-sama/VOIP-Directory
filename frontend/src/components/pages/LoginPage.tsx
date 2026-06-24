@@ -60,7 +60,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBack }) => {
                         )}
 
                         <div className="space-y-2">
-                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">Identity Profile</label>
+                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">Username</label>
                             <div className="relative">
                                 <User className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                                 <input
@@ -75,7 +75,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBack }) => {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">Extension Code</label>
+                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">Password</label>
                             <div className="relative">
                                 <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                                 <input
@@ -104,7 +104,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBack }) => {
 
                     <div className="mt-10 text-center">
                         <p className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.3em]">
-                            Authenticated Management System v3.0
+                            CoB Internal Directory v3.0
                         </p>
                     </div>
                 </div>

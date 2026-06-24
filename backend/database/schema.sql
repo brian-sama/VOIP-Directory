@@ -129,7 +129,5 @@ PREPARE stmt
 FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
--- Insert the default admin user
--- The password is 'bccit'
-INSERT IGNORE INTO admins (username, password)
-VALUES ('admin', 'bccit');
+-- Default admin is created by ensure_schema.js using bcrypt.
+-- Set DEFAULT_ADMIN_PASSWORD env var before first run, then change it immediately.

@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { socketService } from '../services/socketService';
+import { apiService } from '../services/apiService';
 
 interface AuthContextType {
     isAuthenticated: boolean;
@@ -25,33 +26,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     useEffect(() => {
-        // Check for persisted session in sessionStorage (expires when tab/browser closes)
-        const savedUser = sessionStorage.getItem('sentinel_user');
-        if (savedUser) {
-            try {
-                const userData = normalizeUser(JSON.parse(savedUser));
-                setUser(userData);
-                // Connect Socket.io on page load if user is authenticated
-                socketService.connect(userData.username, userData.department, userData.role);
-            } catch (e) {
-                sessionStorage.removeItem('sentinel_user');
-            }
-        }
-        setIsLoading(false);
+        // Restore session from HTTP-only cookie via /auth/me
+        apiService.getMe()
+            .then(userData => {
+                const normalized = normalizeUser(userData);
+                setUser(normalized);
+                socketService.connect(normalized.username, normalized.department, normalized.role);
+            })
+            .catch(() => {
+                // Not authenticated — silently ignore
+            })
+            .finally(() => setIsLoading(false));
     }, []);
 
     const login = (userData: any) => {
         const normalizedUser = normalizeUser(userData);
         setUser(normalizedUser);
-        sessionStorage.setItem('sentinel_user', JSON.stringify(normalizedUser));
-        // Connect Socket.io on login
+        // Cookie is set by the server; no client-side storage needed
         socketService.connect(normalizedUser.username, normalizedUser.department, normalizedUser.role);
     };
 
-    const logout = () => {
+    const logout = async () => {
+        try { await apiService.logout(); } catch {}
         setUser(null);
-        sessionStorage.removeItem('sentinel_user');
-        // Disconnect Socket.io on logout
         socketService.disconnect();
     };
 

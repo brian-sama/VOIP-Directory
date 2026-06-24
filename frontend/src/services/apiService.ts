@@ -61,6 +61,14 @@ export const apiService = {
         const response = await axios.post('/auth/login', credentials);
         return response.data;
     },
+    getMe: async () => {
+        const response = await axios.get('/auth/me');
+        return response.data;
+    },
+    logout: async () => {
+        const response = await axios.post('/auth/logout');
+        return response.data;
+    },
 
     // Import & Cleanup
     importUsers: async (file: File) => {
