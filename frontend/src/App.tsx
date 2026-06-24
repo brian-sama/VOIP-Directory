@@ -33,8 +33,6 @@ import {
   Radio,
   Printer,
 } from 'lucide-react';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { VoipUser, DeviceStatus, SystemStats, ActivityLog } from './types';
 import { DEPARTMENTS } from './constants';
 import { DashboardCards } from './components/DashboardCards';
@@ -496,40 +494,46 @@ const App: React.FC = () => {
     success('Directory exported to CSV.');
   };
 
-  const printDepartmentPDF = () => {
+  const printDepartmentPDF = async () => {
     const deptLabel = filterDept !== 'ALL' ? filterDept : 'All Departments';
     const targets = [...processedUsers].sort((a, b) => a.name_surname.localeCompare(b.name_surname));
-    const doc = new jsPDF({ orientation: 'landscape' });
+    try {
+      const { default: jsPDF } = await import('jspdf');
+      const { default: autoTable } = await import('jspdf-autotable');
+      const doc = new jsPDF({ orientation: 'landscape' });
 
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(16);
-    doc.text(`CoB Internal Directory — ${deptLabel}`, 14, 18);
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(100);
-    doc.text(`Generated: ${new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}   |   Total: ${targets.length}`, 14, 25);
-    doc.setTextColor(0);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(16);
+      doc.text(`CoB Internal Directory — ${deptLabel}`, 14, 18);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(100);
+      doc.text(`Generated: ${new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}   |   Total: ${targets.length}`, 14, 25);
+      doc.setTextColor(0);
 
-    autoTable(doc, {
-      startY: 30,
-      head: [['Name', 'Extension', 'Designation', 'Department', 'Section', 'Station', 'Office', 'Email']],
-      body: targets.map(u => [
-        u.name_surname,
-        u.extension_number || '—',
-        u.designation || '—',
-        u.department || '—',
-        u.section || '—',
-        u.station || '—',
-        u.office_number || '—',
-        u.email || '—',
-      ]),
-      styles: { fontSize: 8, cellPadding: 3 },
-      headStyles: { fillColor: [37, 99, 235], textColor: 255, fontStyle: 'bold' },
-      alternateRowStyles: { fillColor: [248, 250, 252] },
-    });
+      autoTable(doc, {
+        startY: 30,
+        head: [['Name', 'Extension', 'Designation', 'Department', 'Section', 'Station', 'Office', 'Email']],
+        body: targets.map(u => [
+          u.name_surname,
+          u.extension_number || '—',
+          u.designation || '—',
+          u.department || '—',
+          u.section || '—',
+          u.station || '—',
+          u.office_number || '—',
+          u.email || '—',
+        ]),
+        styles: { fontSize: 8, cellPadding: 3 },
+        headStyles: { fillColor: [37, 99, 235], textColor: 255, fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [248, 250, 252] },
+      });
 
-    doc.save(`CoB_Directory_${deptLabel.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
-    success('PDF generated.');
+      doc.save(`CoB_Directory_${deptLabel.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+      success('PDF generated.');
+    } catch {
+      toastError('PDF generation failed.');
+    }
   };
 
   const saveUser = async (e: React.FormEvent) => {
@@ -684,7 +688,7 @@ const App: React.FC = () => {
                 type="button"
                 onClick={() => setMobileMenuOpen(o => !o)}
                 aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-                aria-expanded={mobileMenuOpen ? 'true' : 'false'}
+                aria-expanded={mobileMenuOpen}
                 className="md:hidden w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200 transition-all"
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
