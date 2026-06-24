@@ -205,7 +205,9 @@ async function ensureSchema() {
   }
 }
 
-ensureSchema().catch((err) => {
-  console.error('Schema check failed:', err.message);
-  process.exitCode = 1;
-});
+ensureSchema()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error('Schema check failed:', err.message);
+    process.exit(1);
+  });
