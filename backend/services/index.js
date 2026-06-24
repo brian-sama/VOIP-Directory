@@ -142,14 +142,8 @@ const ACTIVITY_LOG_RETENTION_DAYS = parseInt(process.env.ACTIVITY_LOG_RETENTION_
 
 async function ensureIndexes() {
     try {
-        await db.query(`
-            ALTER TABLE ping_logs
-            ADD INDEX IF NOT EXISTS idx_ping_logs_time (ping_time)
-        `).catch(() => {}); // Silently skip if syntax unsupported (MySQL < 8.0.29)
-        await db.query(`
-            ALTER TABLE activity_logs
-            ADD INDEX IF NOT EXISTS idx_activity_logs_created (created_at)
-        `).catch(() => {});
+        await db.query('CREATE INDEX IF NOT EXISTS idx_ping_logs_time       ON ping_logs     (ping_time)').catch(() => {});
+        await db.query('CREATE INDEX IF NOT EXISTS idx_activity_logs_created ON activity_logs (created_at)').catch(() => {});
         console.log('[Services] DB indexes verified.');
     } catch (err) {
         console.warn('[Services] Index check skipped:', err.message);
@@ -158,13 +152,18 @@ async function ensureIndexes() {
 
 async function purgeOldLogs() {
     try {
-        // Delete in batches of 1000 to avoid long-held locks that conflict with the
-        // monitoring service writing ping_logs every few seconds.
+        // PostgreSQL does not support DELETE ... LIMIT, so we use a CTE subquery.
+        // Batch size of 1000 avoids long-held locks while the monitoring service
+        // writes to ping_logs every few seconds.
         let pingDeleted = 0;
         let pingRows;
         do {
             [pingRows] = await db.query(
-                'DELETE FROM ping_logs WHERE ping_time < DATE_SUB(NOW(), INTERVAL ? DAY) LIMIT 1000',
+                `DELETE FROM ping_logs WHERE id IN (
+                    SELECT id FROM ping_logs
+                    WHERE ping_time < NOW() - ? * INTERVAL '1 day'
+                    LIMIT 1000
+                )`,
                 [PING_LOG_RETENTION_DAYS]
             );
             pingDeleted += pingRows.affectedRows;
@@ -174,7 +173,11 @@ async function purgeOldLogs() {
         let actRows;
         do {
             [actRows] = await db.query(
-                'DELETE FROM activity_logs WHERE created_at < DATE_SUB(NOW(), INTERVAL ? DAY) LIMIT 1000',
+                `DELETE FROM activity_logs WHERE id IN (
+                    SELECT id FROM activity_logs
+                    WHERE created_at < NOW() - ? * INTERVAL '1 day'
+                    LIMIT 1000
+                )`,
                 [ACTIVITY_LOG_RETENTION_DAYS]
             );
             activityDeleted += actRows.affectedRows;

@@ -42,7 +42,7 @@ async function run() {
     require('dotenv').config();
   }
 
-  const required = { DB_HOST: 'localhost', DB_USER: 'root', DB_PASSWORD: '', DB_NAME: 'bcc_voip_directory', PORT: '5001' };
+  const required = { DB_HOST: 'localhost', DB_PORT: '5432', DB_USER: 'postgres', DB_PASSWORD: '', DB_NAME: 'bcc_voip_directory', PORT: '5001' };
   let envOk = true;
   for (const [key, def] of Object.entries(required)) {
     const val = process.env[key];
@@ -59,7 +59,7 @@ async function run() {
   section('2. MySQL Port Check');
 
   const host = process.env.DB_HOST || 'localhost';
-  const port = 3306;
+  const port = parseInt(process.env.DB_PORT || '5432');
 
   await new Promise(resolve => {
     const s = new net.Socket();
