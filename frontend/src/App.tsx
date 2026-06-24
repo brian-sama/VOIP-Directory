@@ -80,25 +80,6 @@ const App: React.FC = () => {
     localStorage.setItem('bcc_live_mode', liveMode.toString());
   }, [liveMode]);
 
-  useEffect(() => { localStorage.setItem('bcc_view_mode', viewMode); }, [viewMode]);
-  useEffect(() => { localStorage.setItem('bcc_show_tree', showTree.toString()); }, [showTree]);
-
-  const getAvatarColor = (dept?: string): string => {
-    const palette = ['bg-blue-600', 'bg-indigo-600', 'bg-violet-600', 'bg-purple-600', 'bg-rose-600', 'bg-amber-600', 'bg-teal-600', 'bg-cyan-600', 'bg-emerald-600', 'bg-orange-600'];
-    if (!dept) return 'bg-slate-500';
-    let h = 0;
-    for (let i = 0; i < dept.length; i++) h = dept.charCodeAt(i) + ((h << 5) - h);
-    return palette[Math.abs(h) % palette.length];
-  };
-
-  const toggleFavourite = (id: number) => {
-    setFavouriteIds(prev => {
-      const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id];
-      localStorage.setItem('bcc_favourites', JSON.stringify(next));
-      return next;
-    });
-  };
-
   const [searchQuery, setSearchQuery] = useState('');
   const [adminSearchQuery, setAdminSearchQuery] = useState('');
   const [adminFilterDept, setAdminFilterDept] = useState(ALL_DEPARTMENTS);
@@ -138,6 +119,25 @@ const App: React.FC = () => {
     catch { return []; }
   });
   const [expandedDepts, setExpandedDepts] = useState<Set<string>>(new Set());
+
+  useEffect(() => { localStorage.setItem('bcc_view_mode', viewMode); }, [viewMode]);
+  useEffect(() => { localStorage.setItem('bcc_show_tree', showTree.toString()); }, [showTree]);
+
+  const getAvatarColor = (dept?: string): string => {
+    const palette = ['bg-blue-600', 'bg-indigo-600', 'bg-violet-600', 'bg-purple-600', 'bg-rose-600', 'bg-amber-600', 'bg-teal-600', 'bg-cyan-600', 'bg-emerald-600', 'bg-orange-600'];
+    if (!dept) return 'bg-slate-500';
+    let h = 0;
+    for (let i = 0; i < dept.length; i++) h = dept.charCodeAt(i) + ((h << 5) - h);
+    return palette[Math.abs(h) % palette.length];
+  };
+
+  const toggleFavourite = (id: number) => {
+    setFavouriteIds(prev => {
+      const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id];
+      localStorage.setItem('bcc_favourites', JSON.stringify(next));
+      return next;
+    });
+  };
 
   const isAdmin = authUser?.role === 'admin';
 
