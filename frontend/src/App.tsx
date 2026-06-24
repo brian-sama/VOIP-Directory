@@ -494,46 +494,55 @@ const App: React.FC = () => {
     success('Directory exported to CSV.');
   };
 
-  const printDepartmentPDF = async () => {
+  const printDepartmentPDF = () => {
     const deptLabel = filterDept !== 'ALL' ? filterDept : 'All Departments';
     const targets = [...processedUsers].sort((a, b) => a.name_surname.localeCompare(b.name_surname));
-    try {
-      const { default: jsPDF } = await import('jspdf');
-      const { default: autoTable } = await import('jspdf-autotable');
-      const doc = new jsPDF({ orientation: 'landscape' });
 
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(16);
-      doc.text(`CoB Internal Directory — ${deptLabel}`, 14, 18);
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(100);
-      doc.text(`Generated: ${new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}   |   Total: ${targets.length}`, 14, 25);
-      doc.setTextColor(0);
+    const printWin = window.open('', '_blank');
+    if (!printWin) { toastError('Popup blocked — allow popups and try again.'); return; }
 
-      autoTable(doc, {
-        startY: 30,
-        head: [['Name', 'Extension', 'Designation', 'Department', 'Section', 'Station', 'Office', 'Email']],
-        body: targets.map(u => [
-          u.name_surname,
-          u.extension_number || '—',
-          u.designation || '—',
-          u.department || '—',
-          u.section || '—',
-          u.station || '—',
-          u.office_number || '—',
-          u.email || '—',
-        ]),
-        styles: { fontSize: 8, cellPadding: 3 },
-        headStyles: { fillColor: [37, 99, 235], textColor: 255, fontStyle: 'bold' },
-        alternateRowStyles: { fillColor: [248, 250, 252] },
-      });
+    const rows = targets.map(u => `
+      <tr>
+        <td>${u.name_surname || ''}</td>
+        <td>${u.extension_number || '—'}</td>
+        <td>${u.designation || '—'}</td>
+        <td>${u.department || '—'}</td>
+        <td>${u.section || '—'}</td>
+        <td>${u.station || '—'}</td>
+        <td>${u.office_number || '—'}</td>
+        <td>${u.email || '—'}</td>
+      </tr>`).join('');
 
-      doc.save(`CoB_Directory_${deptLabel.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
-      success('PDF generated.');
-    } catch {
-      toastError('PDF generation failed.');
-    }
+    printWin.document.write(`<!DOCTYPE html><html lang="en"><head>
+      <meta charset="UTF-8">
+      <title>CoB Directory — ${deptLabel}</title>
+      <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:Arial,sans-serif;font-size:10px;padding:16px;color:#0f172a}
+        h1{font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+        .meta{font-size:8px;color:#64748b;margin-bottom:12px}
+        table{width:100%;border-collapse:collapse}
+        th{background:#2563eb;color:#fff;padding:6px 8px;text-align:left;font-size:8px;text-transform:uppercase;letter-spacing:.08em}
+        td{padding:5px 8px;border-bottom:1px solid #e2e8f0;vertical-align:top}
+        tr:nth-child(even) td{background:#f8fafc}
+        @media print{body{padding:0}@page{margin:12mm;size:A4 landscape}}
+      </style>
+    </head><body>
+      <h1>CoB Internal Directory — ${deptLabel}</h1>
+      <p class="meta">Generated: ${new Date().toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} &nbsp;|&nbsp; Total: ${targets.length}</p>
+      <table>
+        <thead><tr>
+          <th>Name</th><th>Extension</th><th>Designation</th><th>Department</th>
+          <th>Section</th><th>Station</th><th>Office</th><th>Email</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </body></html>`);
+
+    printWin.document.close();
+    printWin.focus();
+    setTimeout(() => { printWin.print(); printWin.close(); }, 400);
+    success('Print dialog opened.');
   };
 
   const saveUser = async (e: React.FormEvent) => {
@@ -688,7 +697,6 @@ const App: React.FC = () => {
                 type="button"
                 onClick={() => setMobileMenuOpen(o => !o)}
                 aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-                aria-expanded={mobileMenuOpen}
                 className="md:hidden w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200 transition-all"
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -899,7 +907,7 @@ const App: React.FC = () => {
                   <table className="w-full text-left">
                     <thead className="bg-slate-50 text-xs font-black text-slate-500 uppercase tracking-widest border-b border-slate-100">
                       <tr>
-                        <th className="px-4 py-4 w-10" aria-label="Favourite"></th>
+                        <th className="px-4 py-4 w-10"><span className="sr-only">Favourite</span></th>
                         <TableHeader k="name_surname" label="Name" />
                         <TableHeader k="email" label="Email" />
                         <th className="px-6 py-4">Designation</th>
