@@ -85,7 +85,7 @@ const App: React.FC = () => {
   const [adminFilterDept, setAdminFilterDept] = useState(ALL_DEPARTMENTS);
   const [editingUser, setEditingUser] = useState<any>(null);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Separate pagination state per view
@@ -213,6 +213,9 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
+    // Wait for auth check to finish before fetching — avoids a double fetch
+    // when the session resolves and isAdmin flips from false → true.
+    if (authLoading) return;
     fetchData();
     if (isAuthenticated) {
       if (!isAdmin && activeView === 'LOGIN') setActiveView('DIRECTORY');
@@ -223,7 +226,7 @@ const App: React.FC = () => {
       setAdminFilterDept(ALL_DEPARTMENTS);
       setActiveView('DIRECTORY');
     }
-  }, [isAuthenticated, isAdmin]);
+  }, [isAuthenticated, isAdmin, authLoading]);
 
   useEffect(() => {
     setSearchQuery('');
