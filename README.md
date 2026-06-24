@@ -60,3 +60,6 @@ A comprehensive web-based application designed to manage, directory, and monitor
 ## 📝 License
 
 This project is licensed under the ISC License.
+
+cd C:\inetpub\wwwroot\VOIP-Directory\backend
+node -e "require('dotenv').config(); const db = require('./config/db'); db.query('SELECT 1').then(() => { console.log('DB OK'); process.exit(0); }).catch(e => { console.error('DB FAILED:', e.message); process.exit(1); });"
