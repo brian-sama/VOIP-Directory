@@ -30,6 +30,29 @@ SELECT user, host, plugin FROM mysql.user WHERE user IN ('root', 'voipapp');
 
 
 ─────────────────────────────────────────
+STEP 1b — Fix MySQL global auth plugin (my.ini)
+─────────────────────────────────────────
+
+REASON: Even with per-user mysql_native_password, MySQL 8.0 still initiates
+        handshakes with caching_sha2_password globally. mysql2 cannot complete
+        this without SSL and hangs. Changing the global default fixes it.
+
+-- Find my.ini location (run in PowerShell):
+Get-ChildItem "C:\ProgramData\MySQL\" -Recurse -Filter "my.ini" -ErrorAction SilentlyContinue
+Get-ChildItem "C:\Program Files\MySQL\" -Recurse -Filter "my.ini" -ErrorAction SilentlyContinue
+
+-- Open my.ini and add this line under [mysqld]:
+[mysqld]
+default_authentication_plugin=mysql_native_password
+
+-- Restart MySQL service (PowerShell as Admin):
+Restart-Service -Name "MySQL80"
+
+-- Verify MySQL restarted:
+Get-Service -Name "MySQL80"
+
+
+─────────────────────────────────────────
 STEP 2 — Update .env on the server (PowerShell as Admin)
 ─────────────────────────────────────────
 
