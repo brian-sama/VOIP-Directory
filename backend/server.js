@@ -3,7 +3,7 @@ const http = require('http');
 const cors = require('cors');
 const os = require('os');
 const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
+const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
 const xss = require('xss-clean');
 const session = require('express-session');
 require('dotenv').config();
@@ -76,11 +76,13 @@ app.use(session({
 app.use(helmet());
 app.use(xss());
 
-// IIS reverse proxy sends req.ip as "IP:PORT"; strip the port so express-rate-limit
-// doesn't throw ERR_ERL_INVALID_IP_ADDRESS and leave requests hanging (→ 502).
+// IIS reverse proxy sends req.ip as "IP:PORT" — strip the port, then pass through
+// express-rate-limit's ipKeyGenerator so IPv6 addresses are normalised correctly
+// and both ERR_ERL_INVALID_IP_ADDRESS and ERR_ERL_KEY_GEN_IPV6 are suppressed.
 const extractIp = (req) => {
-  const ip = req.ip || req.socket.remoteAddress || '0.0.0.0';
-  return ip.replace(/^::ffff:/, '').replace(/:\d+$/, '');
+  const raw = req.ip || req.socket?.remoteAddress || '0.0.0.0';
+  const ip = raw.replace(/^::ffff:/, '').replace(/:\d+$/, '');
+  return ipKeyGenerator(ip);
 };
 
 const limiter = rateLimit({
@@ -90,6 +92,7 @@ const limiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: extractIp,
+  validate: { xForwardedForHeader: false },
 });
 app.use('/api', limiter);
 
@@ -102,6 +105,7 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
   skipSuccessfulRequests: true,
   keyGenerator: extractIp,
+  validate: { xForwardedForHeader: false },
 });
 app.use('/api/auth/login', loginLimiter);
 
