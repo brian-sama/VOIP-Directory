@@ -1,5 +1,70 @@
-node -e "const m = require('mysql2'); const c = m.createConnection({host:'127.0.0.1',port:3306,user:'root',password:'Cityvoip@502',database:'bcc_voip_directory',connectTimeout:5000}); c.connect(e => { console.log(e ? 'FAILED: '+e.message : 'CONNECTED OK'); c.end(); process.exit(0); });"
+VOIP Directory — MySQL Fix Instructions
+========================================
+
+PROBLEM: Node.js hangs when connecting to MySQL 8.0 over TCP.
+CAUSE:   MySQL 8.0 root user uses caching_sha2_password which requires SSL.
+         mysql2 connects without SSL and stalls.
+
+─────────────────────────────────────────
+STEP 1 — Run in MySQL Workbench
+─────────────────────────────────────────
+
+-- Check current auth plugin for root:
+SELECT user, host, plugin FROM mysql.user WHERE user = 'root';
+
+-- Create a dedicated app user with the simpler auth plugin:
+CREATE USER IF NOT EXISTS 'voipapp'@'localhost'
+    IDENTIFIED WITH mysql_native_password BY 'Cityvoip@502';
+
+GRANT ALL PRIVILEGES ON bcc_voip_directory.* TO 'voipapp'@'localhost';
+
+FLUSH PRIVILEGES;
 
 
-(Get-Content "C:\inetpub\wwwroot\VOIP-Directory\backend\.env") -replace 'DB_HOST=localhost','DB_HOST=127.0.0.1' | Set-Content "C:\inetpub\wwwroot\VOIP-Directory\backend\.env"
-Get-Content "C:\inetpub\wwwroot\VOIP-Directory\backend\.env"
+─────────────────────────────────────────
+STEP 2 — Update .env on the server (PowerShell as Admin)
+─────────────────────────────────────────
+
+@"
+DB_HOST=127.0.0.1
+DB_USER=voipapp
+DB_PASSWORD=Cityvoip@502
+DB_NAME=bcc_voip_directory
+PORT=5001
+"@ | Out-File -FilePath "C:\inetpub\wwwroot\VOIP-Directory\backend\.env" -Encoding utf8
+
+
+─────────────────────────────────────────
+STEP 3 — Test the connection (PowerShell)
+─────────────────────────────────────────
+
+cd C:\inetpub\wwwroot\VOIP-Directory\backend
+
+node -e "const m=require('mysql2'); const c=m.createConnection({host:'127.0.0.1',user:'voipapp',password:'Cityvoip@502',database:'bcc_voip_directory',connectTimeout:5000}); c.connect(e=>{console.log(e?'FAILED: '+e.message:'CONNECTED OK'); c.end(); process.exit(0);});"
+
+Expected output: CONNECTED OK
+
+
+─────────────────────────────────────────
+STEP 4 — Restart PM2
+─────────────────────────────────────────
+
+pm2 restart bcc-directory-backend
+
+
+─────────────────────────────────────────
+STEP 5 — Run full diagnostics
+─────────────────────────────────────────
+
+node diagnose.js
+
+All items should show [OK]. Then try logging in at http://9.135.112.20
+
+
+─────────────────────────────────────────
+STEP 6 — If CONNECTED OK but app still fails
+─────────────────────────────────────────
+
+Check PM2 logs for new errors:
+
+pm2 logs bcc-directory-backend --lines 30 --nostream
