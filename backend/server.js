@@ -76,12 +76,20 @@ app.use(session({
 app.use(helmet());
 app.use(xss());
 
+// IIS reverse proxy sends req.ip as "IP:PORT"; strip the port so express-rate-limit
+// doesn't throw ERR_ERL_INVALID_IP_ADDRESS and leave requests hanging (→ 502).
+const extractIp = (req) => {
+  const ip = req.ip || req.socket.remoteAddress || '0.0.0.0';
+  return ip.replace(/^::ffff:/, '').replace(/:\d+$/, '');
+};
+
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 500,
   message: 'Too many requests from this IP, please try again after 15 minutes',
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: extractIp,
 });
 app.use('/api', limiter);
 
@@ -93,6 +101,7 @@ const loginLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: true,
+  keyGenerator: extractIp,
 });
 app.use('/api/auth/login', loginLimiter);
 

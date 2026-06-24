@@ -126,8 +126,7 @@ async function checkExtensions() {
                 [status, (status === 'Online' ? now : null), sipPortOpen, sipStatus, now, e.id]
             );
 
-            // Log ping result separately for debugging
-            await connection.query('INSERT INTO ping_logs (extension_id, ping_time, result) VALUES (?, ?, ?)', [e.id, now, isPingAlive ? 'Success' : 'Failed']);
+            await connection.query('INSERT IGNORE INTO ping_logs (extension_id, ping_time, result) VALUES (?, ?, ?)', [e.id, now, isPingAlive ? 'Success' : 'Failed']);
         }
     } catch (err) {
         console.error('[Monitoring] Error:', err.message);
@@ -159,16 +158,30 @@ async function ensureIndexes() {
 
 async function purgeOldLogs() {
     try {
-        const [pingResult] = await db.query(
-            'DELETE FROM ping_logs WHERE ping_time < DATE_SUB(NOW(), INTERVAL ? DAY)',
-            [PING_LOG_RETENTION_DAYS]
-        );
-        const [activityResult] = await db.query(
-            'DELETE FROM activity_logs WHERE created_at < DATE_SUB(NOW(), INTERVAL ? DAY)',
-            [ACTIVITY_LOG_RETENTION_DAYS]
-        );
-        const deleted = pingResult.affectedRows + activityResult.affectedRows;
-        if (deleted > 0) console.log(`[Retention] Purged ${pingResult.affectedRows} ping logs, ${activityResult.affectedRows} activity logs.`);
+        // Delete in batches of 1000 to avoid long-held locks that conflict with the
+        // monitoring service writing ping_logs every few seconds.
+        let pingDeleted = 0;
+        let pingRows;
+        do {
+            [pingRows] = await db.query(
+                'DELETE FROM ping_logs WHERE ping_time < DATE_SUB(NOW(), INTERVAL ? DAY) LIMIT 1000',
+                [PING_LOG_RETENTION_DAYS]
+            );
+            pingDeleted += pingRows.affectedRows;
+        } while (pingRows.affectedRows === 1000);
+
+        let activityDeleted = 0;
+        let actRows;
+        do {
+            [actRows] = await db.query(
+                'DELETE FROM activity_logs WHERE created_at < DATE_SUB(NOW(), INTERVAL ? DAY) LIMIT 1000',
+                [ACTIVITY_LOG_RETENTION_DAYS]
+            );
+            activityDeleted += actRows.affectedRows;
+        } while (actRows.affectedRows === 1000);
+
+        if (pingDeleted + activityDeleted > 0)
+            console.log(`[Retention] Purged ${pingDeleted} ping logs, ${activityDeleted} activity logs.`);
     } catch (err) {
         console.error('[Retention] Purge failed:', err.message);
     }
