@@ -9,16 +9,24 @@ CAUSE:   MySQL 8.0 root user uses caching_sha2_password which requires SSL.
 STEP 1 — Run in MySQL Workbench
 ─────────────────────────────────────────
 
--- Check current auth plugin for root:
-SELECT user, host, plugin FROM mysql.user WHERE user = 'root';
+NOTE: MySQL treats 'localhost' and '127.0.0.1' as DIFFERENT hosts.
+      Node.js connects via 127.0.0.1 (TCP), so the user must exist for that host.
 
--- Create a dedicated app user with the simpler auth plugin:
-CREATE USER IF NOT EXISTS 'voipapp'@'localhost'
-    IDENTIFIED WITH mysql_native_password BY 'Cityvoip@502';
+-- Create user for BOTH localhost and 127.0.0.1:
+CREATE USER IF NOT EXISTS 'voipapp'@'localhost'  IDENTIFIED WITH mysql_native_password BY 'Cityvoip@502';
+CREATE USER IF NOT EXISTS 'voipapp'@'127.0.0.1' IDENTIFIED WITH mysql_native_password BY 'Cityvoip@502';
 
 GRANT ALL PRIVILEGES ON bcc_voip_directory.* TO 'voipapp'@'localhost';
+GRANT ALL PRIVILEGES ON bcc_voip_directory.* TO 'voipapp'@'127.0.0.1';
+
+-- Also fix root for 127.0.0.1:
+CREATE USER IF NOT EXISTS 'root'@'127.0.0.1' IDENTIFIED WITH mysql_native_password BY 'Cityvoip@502';
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'127.0.0.1' WITH GRANT OPTION;
 
 FLUSH PRIVILEGES;
+
+-- Verify all entries (share this output if still failing):
+SELECT user, host, plugin FROM mysql.user WHERE user IN ('root', 'voipapp');
 
 
 ─────────────────────────────────────────
