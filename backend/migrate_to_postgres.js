@@ -34,6 +34,9 @@ const PG_CFG = {
 // Insert in dependency order so parent rows exist before children
 const TABLE_ORDER = ['users', 'admins', 'extensions', 'activity_logs', 'ping_logs'];
 
+// Tables with millions of rows that are safe to skip (they rebuild automatically)
+const SKIP_TABLES = ['ping_logs'];
+
 // ── Type mapping ─────────────────────────────────────────────────────────────
 
 function toPgType(dataType, columnType, extra) {
@@ -151,6 +154,49 @@ async function migrate() {
     console.log(`Tables to migrate: ${ordered.join(', ')}\n`);
 
     for (const table of ordered) {
+      if (SKIP_TABLES.includes(table)) {
+        console.log(`── ${table}`);
+        console.log('  [SKIP] Monitoring log — will rebuild automatically. Creating empty table.\n');
+        // Still create the schema so the app can write to it
+        const [cols] = await my.query(
+          `SELECT COLUMN_NAME, DATA_TYPE, COLUMN_TYPE, IS_NULLABLE,
+                  COLUMN_DEFAULT, EXTRA, COLUMN_KEY
+           FROM information_schema.COLUMNS
+           WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?
+           ORDER BY ORDINAL_POSITION`,
+          [MYSQL_CFG.database, table]
+        );
+        const typeMap = {};
+        const colDefs = [];
+        for (const c of cols) {
+          const pt = toPgType(c.DATA_TYPE, c.COLUMN_TYPE, c.EXTRA);
+          typeMap[c.COLUMN_NAME] = pt;
+          const isSerial = pt === 'SERIAL' || pt === 'BIGSERIAL';
+          let def = `  "${c.COLUMN_NAME}" ${pt}`;
+          if (c.COLUMN_KEY === 'PRI') def += ' PRIMARY KEY';
+          if (!isSerial && c.IS_NULLABLE === 'NO') def += ' NOT NULL';
+          if (!isSerial && c.COLUMN_DEFAULT !== null) {
+            const dv = c.COLUMN_DEFAULT;
+            if (/^CURRENT_TIMESTAMP/i.test(dv) || dv === 'current_timestamp()') {
+              def += ' DEFAULT CURRENT_TIMESTAMP';
+            } else if (pt === 'BOOLEAN') {
+              def += ` DEFAULT ${dv === '1' ? 'TRUE' : 'FALSE'}`;
+            } else if (/^\d+(\.\d+)?$/.test(dv)) {
+              def += ` DEFAULT ${dv}`;
+            } else {
+              def += ` DEFAULT '${dv.replace(/'/g, "''")}'`;
+            }
+          }
+          colDefs.push(def);
+        }
+        await pg.query(`DROP TABLE IF EXISTS "${table}" CASCADE`);
+        await pg.query(`CREATE TABLE "${table}" (\n${colDefs.join(',\n')}\n)`).catch(e => {
+          console.warn(`  [WARN] Schema: ${e.message}`);
+        });
+        stats.tables++;
+        continue;
+      }
+
       console.log(`── ${table}`);
 
       // Get column definitions from information_schema
@@ -215,20 +261,33 @@ async function migrate() {
         continue;
       }
 
-      const colNames = cols.map(c => c.COLUMN_NAME);
-      const colList  = colNames.map(c => `"${c}"`).join(', ');
-      // Fetch in pages of 500 rows so large tables (ping_logs) never OOM
+      const colNames  = cols.map(c => c.COLUMN_NAME);
+      const colList   = colNames.map(c => `"${c}"`).join(', ');
+      const serialCol = cols.find(c => /AUTO_INCREMENT/i.test(c.EXTRA));
+      // Fetch in pages of 500 rows. Use cursor-based pagination (WHERE id > lastId)
+      // when a serial/PK column exists — stays fast on tables with millions of rows.
+      // Fall back to OFFSET only for tables without a numeric PK.
       const PAGE     = 500;
       let   inserted = 0;
+      let   lastId   = 0;
       let   offset   = 0;
       let   fetched;
 
       do {
-        const [rows] = await my.query(
-          `SELECT * FROM \`${table}\` ORDER BY 1 LIMIT ${PAGE} OFFSET ${offset}`
-        );
+        let rows;
+        if (serialCol) {
+          [rows] = await my.query(
+            `SELECT * FROM \`${table}\` WHERE \`${serialCol.COLUMN_NAME}\` > ? ORDER BY \`${serialCol.COLUMN_NAME}\` LIMIT ${PAGE}`,
+            [lastId]
+          );
+          if (rows.length) lastId = rows[rows.length - 1][serialCol.COLUMN_NAME];
+        } else {
+          [rows] = await my.query(
+            `SELECT * FROM \`${table}\` LIMIT ${PAGE} OFFSET ${offset}`
+          );
+          offset += rows.length;
+        }
         fetched = rows.length;
-        offset += fetched;
 
         if (!fetched) break;
 
@@ -265,7 +324,6 @@ async function migrate() {
       } while (fetched === PAGE);
 
       // Advance the SERIAL sequence past the highest existing id
-      const serialCol = cols.find(c => /AUTO_INCREMENT/i.test(c.EXTRA));
       if (serialCol) {
         try {
           await pg.query(
