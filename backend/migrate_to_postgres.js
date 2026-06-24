@@ -207,9 +207,9 @@ async function migrate() {
         continue;
       }
 
-      // Fetch all rows from MySQL
-      const [rows] = await my.query(`SELECT * FROM \`${table}\``);
-      if (!rows.length) {
+      // Count rows first so we can show progress without loading everything
+      const [[{ total }]] = await my.query(`SELECT COUNT(*) AS total FROM \`${table}\``);
+      if (total === 0) {
         console.log('  [OK] 0 rows (empty table)\n');
         stats.tables++;
         continue;
@@ -217,16 +217,26 @@ async function migrate() {
 
       const colNames = cols.map(c => c.COLUMN_NAME);
       const colList  = colNames.map(c => `"${c}"`).join(', ');
-      const BATCH    = 200;
+      // Fetch in pages of 500 rows so large tables (ping_logs) never OOM
+      const PAGE     = 500;
       let   inserted = 0;
+      let   offset   = 0;
+      let   fetched;
 
-      for (let i = 0; i < rows.length; i += BATCH) {
-        const batch = rows.slice(i, i + BATCH);
+      do {
+        const [rows] = await my.query(
+          `SELECT * FROM \`${table}\` ORDER BY 1 LIMIT ${PAGE} OFFSET ${offset}`
+        );
+        fetched = rows.length;
+        offset += fetched;
+
+        if (!fetched) break;
+
         const placeholders = [];
         const values       = [];
         let   idx          = 1;
 
-        for (const row of batch) {
+        for (const row of rows) {
           placeholders.push(`(${colNames.map(() => `$${idx++}`).join(', ')})`);
           for (const col of colNames) values.push(convertValue(row[col], typeMap[col]));
         }
@@ -238,7 +248,7 @@ async function migrate() {
           inserted += r.rowCount;
         } catch (batchErr) {
           // Retry row by row to recover as many as possible
-          for (const row of batch) {
+          for (const row of rows) {
             const vals = colNames.map(c => convertValue(row[c], typeMap[c]));
             const ph   = colNames.map((_, k) => `$${k + 1}`).join(', ');
             try {
@@ -250,7 +260,9 @@ async function migrate() {
             }
           }
         }
-      }
+
+        process.stdout.write(`\r  Migrating... ${inserted}/${total} rows`);
+      } while (fetched === PAGE);
 
       // Advance the SERIAL sequence past the highest existing id
       const serialCol = cols.find(c => /AUTO_INCREMENT/i.test(c.EXTRA));
@@ -265,7 +277,8 @@ async function migrate() {
         } catch { /* non-fatal */ }
       }
 
-      console.log(`  [OK] ${inserted}/${rows.length} rows migrated\n`);
+      process.stdout.write('\n');
+      console.log(`  [OK] ${inserted}/${total} rows migrated\n`);
       stats.rows   += inserted;
       stats.tables++;
     }

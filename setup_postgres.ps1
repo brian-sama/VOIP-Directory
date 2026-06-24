@@ -119,8 +119,8 @@ if ($mysqlSvc -and $mysqlSvc.Status -ne "Running") {
 }
 
 Set-Location $BACKEND
-INFO "Running: node migrate_to_postgres.js"
-node migrate_to_postgres.js
+INFO "Running: node --max-old-space-size=4096 migrate_to_postgres.js"
+node --max-old-space-size=4096 migrate_to_postgres.js
 if ($LASTEXITCODE -ne 0) {
     FAIL "Data migration failed. Fix errors above then re-run: node migrate_to_postgres.js"
 }
