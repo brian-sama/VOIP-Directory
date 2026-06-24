@@ -1,0 +1,5 @@
+node -e "const m = require('mysql2'); const c = m.createConnection({host:'127.0.0.1',port:3306,user:'root',password:'Cityvoip@502',database:'bcc_voip_directory',connectTimeout:5000}); c.connect(e => { console.log(e ? 'FAILED: '+e.message : 'CONNECTED OK'); c.end(); process.exit(0); });"
+
+
+(Get-Content "C:\inetpub\wwwroot\VOIP-Directory\backend\.env") -replace 'DB_HOST=localhost','DB_HOST=127.0.0.1' | Set-Content "C:\inetpub\wwwroot\VOIP-Directory\backend\.env"
+Get-Content "C:\inetpub\wwwroot\VOIP-Directory\backend\.env"
