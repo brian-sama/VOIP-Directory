@@ -33,14 +33,12 @@ if ($psqlCmd) {
     $psql = $psqlCmd.Source
 } else {
     $psql = $null
-    $candidates = @(
-        "C:\Program Files\PostgreSQL\17\bin\psql.exe",
-        "C:\Program Files\PostgreSQL\16\bin\psql.exe",
-        "C:\Program Files\PostgreSQL\15\bin\psql.exe",
-        "C:\Program Files\PostgreSQL\14\bin\psql.exe"
-    )
-    foreach ($p in $candidates) {
-        if (Test-Path $p) { $psql = $p; break }
+    # Search all installed PostgreSQL versions dynamically
+    $pgDirs = Get-ChildItem "C:\Program Files\PostgreSQL\" -ErrorAction SilentlyContinue |
+              Sort-Object Name -Descending
+    foreach ($dir in $pgDirs) {
+        $candidate = "$($dir.FullName)\bin\psql.exe"
+        if (Test-Path $candidate) { $psql = $candidate; break }
     }
 }
 
@@ -59,7 +57,7 @@ if ($pgSvc -and $pgSvc.Status -ne "Running") {
     Start-Sleep -Seconds 4
 }
 
-$testOut = & $psql -U $PG_SUPER -h 127.0.0.1 -c "SELECT 1" 2>&1
+& $psql -U $PG_SUPER -h 127.0.0.1 -c "SELECT 1" 2>&1 | Out-Null
 if ($LASTEXITCODE -ne 0) {
     FAIL "Cannot connect to PostgreSQL. Make sure it is installed and running."
 }
